@@ -19,7 +19,10 @@ class FactureFournisseurController extends Controller
     public function create()
     {
         $fournisseurs = Fournisseur::all();
-        $commandes    = BonCommandeFournisseur::where('statut', 'reçu')->get();
+
+    // Afficher toutes les commandes (pas seulement reçu)
+        $commandes = BonCommandeFournisseur::with('fournisseur')->get();
+
         return view('appro.factures.create', compact('fournisseurs', 'commandes'));
     }
 

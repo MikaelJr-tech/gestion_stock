@@ -25,111 +25,165 @@
 
                 {{-- Dashboard --}}
                 <a href="{{ route('dashboard') }}"
-                   class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                     <span class="mr-3">🏠</span> Dashboard
                 </a>
 
                 {{-- APPROVISIONNEMENTS --}}
+                @if(auth()->user()->hasAnyPermission(['appro.commandes.voir','appro.factures.voir','appro.bons-entree.voir']))
                 <div class="pt-3">
                     <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Approvisionnements</p>
 
+                    @can('appro.commandes.voir')
                     <a href="{{ route('appro.commandes.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('appro.commandes.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('appro.commandes.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">📋</span> Bons de commande
                     </a>
+                    @endcan
+
+                    @can('appro.factures.voir')
                     <a href="{{ route('appro.factures.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('appro.factures.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('appro.factures.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">🧾</span> Factures fournisseur
                     </a>
+                    @endcan
+
+                    @can('appro.bons-entree.voir')
                     <a href="{{ route('appro.bons-entree.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('appro.bons-entree.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('appro.bons-entree.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">📥</span> Bons d'entrée / Dons
                     </a>
+                    @endcan
                 </div>
+                @endif
 
                 {{-- VENTES --}}
+                @if(auth()->user()->hasAnyPermission(['ventes.commandes.voir','ventes.factures.voir','ventes.bons-sortie.voir']))
                 <div class="pt-3">
                     <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Ventes</p>
 
+                    @can('ventes.commandes.voir')
                     <a href="{{ route('ventes.commandes.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('ventes.commandes.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('ventes.commandes.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">🛒</span> Commandes client
                     </a>
+                    @endcan
+
+                    @can('ventes.factures.voir')
                     <a href="{{ route('ventes.factures.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('ventes.factures.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('ventes.factures.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">🧾</span> Factures client
                     </a>
+                    @endcan
+
+                    @can('ventes.bons-sortie.voir')
                     <a href="{{ route('ventes.bons-sortie.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('ventes.bons-sortie.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('ventes.bons-sortie.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">📤</span> Bons de sortie
                     </a>
+                    @endcan
                 </div>
+                @endif
 
                 {{-- STRUCTURE --}}
+                @if(auth()->user()->hasAnyPermission(['produits.voir','familles.voir','fournisseurs.voir','clients.voir','categories.voir','banques.voir','versements.voir']))
                 <div class="pt-3">
                     <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Structure</p>
 
+                    @can('produits.voir')
                     <a href="{{ route('produits.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('produits.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('produits.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">📦</span> Produits
                     </a>
+                    @endcan
+
+                    @can('familles.voir')
                     <a href="{{ route('familles.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('familles.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('familles.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">🗂️</span> Familles
                     </a>
+                    @endcan
+
+                    @can('fournisseurs.voir')
                     <a href="{{ route('fournisseurs.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('fournisseurs.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('fournisseurs.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">🏭</span> Fournisseurs
                     </a>
+                    @endcan
+
+                    @can('clients.voir')
                     <a href="{{ route('clients.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('clients.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('clients.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">👥</span> Clients
                     </a>
+                    @endcan
+
+                    @can('categories.voir')
                     <a href="{{ route('categories.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('categories.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('categories.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">🏷️</span> Catégories clients
                     </a>
+                    @endcan
+
+                    @can('banques.voir')
                     <a href="{{ route('banques.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('banques.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('banques.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">🏦</span> Banques
                     </a>
+                    @endcan
+
+                    @can('versements.voir')
                     <a href="{{ route('versements.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('versements.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('versements.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">💰</span> Versements
                     </a>
+                    @endcan
                 </div>
+                @endif
 
                 {{-- RAPPORTS --}}
+                @if(auth()->user()->hasAnyPermission(['rapports.achats','rapports.ventes','rapports.versements']))
                 <div class="pt-3">
                     <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Rapports</p>
 
+                    @can('rapports.achats')
                     <a href="{{ route('rapports.achats-jour') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('rapports.achats*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('rapports.achats*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">📊</span> Achats
                     </a>
+                    @endcan
+
+                    @can('rapports.ventes')
                     <a href="{{ route('rapports.ventes-jour') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('rapports.ventes*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('rapports.ventes*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">📈</span> Ventes
                     </a>
+                    @endcan
+
+                    @can('rapports.versements')
                     <a href="{{ route('rapports.versements-banque') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('rapports.versements*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('rapports.versements*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">🏦</span> Versements banque
                     </a>
+                    @endcan
                 </div>
+                @endif
 
                 {{-- ADMINISTRATION --}}
+                @role('Administrateur')
                 <div class="pt-3">
                     <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Administration</p>
 
                     <a href="{{ route('utilisateurs.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('utilisateurs.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('utilisateurs.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">👤</span> Utilisateurs
                     </a>
                     <a href="{{ route('groupes.index') }}"
-                       class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('groupes.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2 rounded-lg text-sm {{ request()->routeIs('groupes.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                         <span class="mr-3">🔐</span> Groupes & Droits
                     </a>
                 </div>
+                @endrole
 
             </nav>
 
