@@ -2,61 +2,78 @@
 @section('title', 'Bons de commande fournisseur')
 
 @section('content')
-<div class="flex justify-between items-center mb-6">
-    <h3 class="text-lg font-semibold text-gray-700">Bons de commande fournisseur</h3>
-    <a href="{{ route('appro.commandes.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-        + Nouveau bon de commande
-    </a>
+<div class="page-header">
+    <h1 class="page-title">Bons de commande fournisseur</h1>
+    @can('appro.commandes.creer')
+    <a href="{{ route('appro.commandes.create') }}" class="btn btn-primary">+ Nouveau bon de commande</a>
+    @endcan
 </div>
 
-<div class="bg-white rounded-xl shadow overflow-hidden">
-    <table class="w-full text-sm">
-        <thead class="bg-gray-50 text-gray-600">
-            <tr>
-                <th class="px-4 py-3 text-left">Numéro</th>
-                <th class="px-4 py-3 text-left">Fournisseur</th>
-                <th class="px-4 py-3 text-left">Date commande</th>
-                <th class="px-4 py-3 text-left">Date livraison</th>
-                <th class="px-4 py-3 text-left">Montant total</th>
-                <th class="px-4 py-3 text-left">Statut</th>
-                <th class="px-4 py-3 text-left">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-            @forelse($commandes as $commande)
-            <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3 font-mono text-xs font-bold">{{ $commande->numero }}</td>
-                <td class="px-4 py-3 font-medium">{{ $commande->fournisseur->nom }}</td>
-                <td class="px-4 py-3">{{ $commande->date_commande->format('d/m/Y') }}</td>
-                <td class="px-4 py-3">{{ $commande->date_livraison_prevue?->format('d/m/Y') ?? '-' }}</td>
-                <td class="px-4 py-3 font-bold">{{ number_format($commande->montant_total, 0, ',', ' ') }} FCFA</td>
-                <td class="px-4 py-3">
-                    <span class="px-2 py-1 rounded-full text-xs
-                        {{ $commande->statut === 'reçu' ? 'bg-green-100 text-green-700' : '' }}
-                        {{ $commande->statut === 'en_attente' ? 'bg-yellow-100 text-yellow-700' : '' }}
-                        {{ $commande->statut === 'annulé' ? 'bg-red-100 text-red-700' : '' }}
-                        {{ $commande->statut === 'partiel' ? 'bg-blue-100 text-blue-700' : '' }}">
-                        {{ $commande->statut }}
-                    </span>
-                </td>
-                <td class="px-4 py-3">
-                    <div class="flex space-x-2">
-                        <a href="{{ route('appro.commandes.show', $commande) }}" class="text-blue-600 hover:underline">Voir</a>
-                        <a href="{{ route('appro.commandes.edit', $commande) }}" class="text-yellow-600 hover:underline">Modifier</a>
-                        <a href="{{ route('appro.commandes.imprimer', $commande) }}" target="_blank" class="text-green-600 hover:underline">PDF</a>
-                        <form action="{{ route('appro.commandes.destroy', $commande) }}" method="POST"
+<div class="card">
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Numéro</th>
+                    <th>Fournisseur</th>
+                    <th>Date commande</th>
+                    <th>Date livraison</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($commandes as $commande)
+                <tr>
+                    <td class="font-mono fw-600 text-900">{{ $commande->numero }}</td>
+                    <td class="fw-500">{{ $commande->fournisseur->nom }}</td>
+                    <td class="text-500">{{ $commande->date_commande->format('d/m/Y') }}</td>
+                    <td class="text-400">{{ $commande->date_livraison_prevue?->format('d/m/Y') ?? '—' }}</td>
+                    <td class="fw-600 text-900">{{ number_format($commande->montant_total, 0, ',', ' ') }} FCFA</td>
+                    <td>
+                        @if($commande->statut === 'reçu')
+                            <span class="badge badge-success">{{ $commande->statut }}</span>
+                        @elseif($commande->statut === 'partiel')
+                            <span class="badge badge-warning">{{ $commande->statut }}</span>
+                        @elseif($commande->statut === 'annulé')
+                            <span class="badge badge-danger">{{ $commande->statut }}</span>
+                        @else
+                            <span class="badge badge-neutral">{{ $commande->statut }}</span>
+                        @endif
+                    </td>
+                    <td class="actions-cell">
+                        @can('appro.commandes.voir')
+                        <a href="{{ route('appro.commandes.show', $commande) }}" class="btn btn-secondary btn-sm">Voir</a>
+                        @endcan
+                        @can('appro.commandes.modifier')
+                        <a href="{{ route('appro.commandes.edit', $commande) }}" class="btn btn-warning btn-sm">Modifier</a>
+                        @endcan
+                        @can('appro.commandes.imprimer')
+                        <a href="{{ route('appro.commandes.imprimer', $commande) }}" target="_blank" class="btn btn-success btn-sm">PDF</a>
+                        @endcan
+                        @can('appro.commandes.supprimer')
+                        <form action="{{ route('appro.commandes.destroy', $commande) }}" method="POST" style="display:inline;"
                               onsubmit="return confirm('Supprimer ce bon de commande ?')">
                             @csrf @method('DELETE')
-                            <button class="text-red-600 hover:underline">Supprimer</button>
+                            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
                         </form>
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">Aucun bon de commande enregistré.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-    <div class="px-4 py-3">{{ $commandes->links() }}</div>
+                        @endcan
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-text">Aucun bon de commande enregistré.</div>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    <div style="padding: 8px 16px;">{{ $commandes->links() }}</div>
 </div>
 @endsection

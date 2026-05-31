@@ -27,19 +27,18 @@ class CommandeClientController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'client_id'            => 'required|exists:clients,id',
-            'date_commande'        => 'required|date',
-            'produits'             => 'required|array|min:1',
-            'produits.*.produit_id'=> 'required|exists:produits,id',
-            'produits.*.quantite'  => 'required|integer|min:1',
+            'client_id'              => 'required|exists:clients,id',
+            'date_commande'          => 'required|date',
+            'produits'               => 'required|array|min:1',
+            'produits.*.produit_id'  => 'required|exists:produits,id',
+            'produits.*.quantite'    => 'required|integer|min:1',
             'produits.*.prix_unitaire' => 'required|numeric|min:0',
-            'produits.*.remise'    => 'nullable|numeric|min:0|max:100',
+            'produits.*.remise'      => 'nullable|numeric|min:0|max:100',
         ]);
 
         $numero  = 'CC-' . date('Ymd') . '-' . str_pad(CommandeClient::count() + 1, 4, '0', STR_PAD_LEFT);
         $montant = collect($request->produits)->sum(function ($l) {
-            $remise = $l['remise'] ?? 0;
-            return $l['quantite'] * $l['prix_unitaire'] * (1 - $remise / 100);
+            return $l['quantite'] * $l['prix_unitaire'] * (1 - ($l['remise'] ?? 0) / 100);
         });
 
         $commande = CommandeClient::create([
@@ -51,9 +50,8 @@ class CommandeClientController extends Controller
         ]);
 
         foreach ($request->produits as $ligne) {
-            $remise  = $ligne['remise'] ?? 0;
+            $remise   = $ligne['remise'] ?? 0;
             $montantL = $ligne['quantite'] * $ligne['prix_unitaire'] * (1 - $remise / 100);
-
             LigneCommandeClient::create([
                 'commande_id'   => $commande->id,
                 'produit_id'    => $ligne['produit_id'],
@@ -64,7 +62,8 @@ class CommandeClientController extends Controller
             ]);
         }
 
-        return redirect()->route('ventes.commandes.index')->with('success', 'Commande créée avec succès.');
+        return redirect()->route('ventes.commandes.index')
+            ->with('success', 'Commande créée avec succès.');
     }
 
     public function show(CommandeClient $commande)
@@ -84,18 +83,17 @@ class CommandeClientController extends Controller
     public function update(Request $request, CommandeClient $commande)
     {
         $request->validate([
-            'client_id'             => 'required|exists:clients,id',
-            'date_commande'         => 'required|date',
-            'produits'              => 'required|array|min:1',
-            'produits.*.produit_id' => 'required|exists:produits,id',
-            'produits.*.quantite'   => 'required|integer|min:1',
+            'client_id'                => 'required|exists:clients,id',
+            'date_commande'            => 'required|date',
+            'produits'                 => 'required|array|min:1',
+            'produits.*.produit_id'    => 'required|exists:produits,id',
+            'produits.*.quantite'      => 'required|integer|min:1',
             'produits.*.prix_unitaire' => 'required|numeric|min:0',
-            'produits.*.remise'     => 'nullable|numeric|min:0|max:100',
+            'produits.*.remise'        => 'nullable|numeric|min:0|max:100',
         ]);
 
         $montant = collect($request->produits)->sum(function ($l) {
-            $remise = $l['remise'] ?? 0;
-            return $l['quantite'] * $l['prix_unitaire'] * (1 - $remise / 100);
+            return $l['quantite'] * $l['prix_unitaire'] * (1 - ($l['remise'] ?? 0) / 100);
         });
 
         $commande->update([
@@ -109,7 +107,6 @@ class CommandeClientController extends Controller
         foreach ($request->produits as $ligne) {
             $remise   = $ligne['remise'] ?? 0;
             $montantL = $ligne['quantite'] * $ligne['prix_unitaire'] * (1 - $remise / 100);
-
             LigneCommandeClient::create([
                 'commande_id'   => $commande->id,
                 'produit_id'    => $ligne['produit_id'],
@@ -120,13 +117,17 @@ class CommandeClientController extends Controller
             ]);
         }
 
-        return redirect()->route('ventes.commandes.index')->with('success', 'Commande modifiée avec succès.');
+        return redirect()->route('ventes.commandes.index')
+            ->with('success', 'Commande modifiée avec succès.');
     }
 
     public function destroy(CommandeClient $commande)
     {
+        $commande->load('lignes.produit');
+        ArchiveController::archiver('commande_client', $commande);
         $commande->delete();
-        return redirect()->route('ventes.commandes.index')->with('success', 'Commande supprimée avec succès.');
+        return redirect()->route('ventes.commandes.index')
+            ->with('success', 'Commande supprimée et archivée en XML.');
     }
 
     public function livrer(CommandeClient $commande)
@@ -134,9 +135,9 @@ class CommandeClientController extends Controller
         foreach ($commande->lignes as $ligne) {
             $ligne->produit->decrement('stock_actuel', $ligne->quantite);
         }
-
         $commande->update(['statut' => 'livrée']);
-        return redirect()->back()->with('success', 'Commande livrée et stock mis à jour.');
+        return redirect()->back()
+            ->with('success', 'Commande livrée et stock mis à jour.');
     }
 
     public function imprimer(CommandeClient $commande)

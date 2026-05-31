@@ -19,10 +19,7 @@ class FactureFournisseurController extends Controller
     public function create()
     {
         $fournisseurs = Fournisseur::all();
-
-    // Afficher toutes les commandes (pas seulement reçu)
-        $commandes = BonCommandeFournisseur::with('fournisseur')->get();
-
+        $commandes    = BonCommandeFournisseur::with('fournisseur')->get();
         return view('appro.factures.create', compact('fournisseurs', 'commandes'));
     }
 
@@ -52,7 +49,8 @@ class FactureFournisseurController extends Controller
             'montant_ttc'     => $montantTtc,
         ]);
 
-        return redirect()->route('appro.factures.index')->with('success', 'Facture fournisseur créée avec succès.');
+        return redirect()->route('appro.factures.index')
+            ->with('success', 'Facture fournisseur créée avec succès.');
     }
 
     public function show(FactureFournisseur $facture)
@@ -64,7 +62,7 @@ class FactureFournisseurController extends Controller
     public function edit(FactureFournisseur $facture)
     {
         $fournisseurs = Fournisseur::all();
-        $commandes    = BonCommandeFournisseur::where('statut', 'reçu')->get();
+        $commandes    = BonCommandeFournisseur::with('fournisseur')->get();
         return view('appro.factures.edit', compact('facture', 'fournisseurs', 'commandes'));
     }
 
@@ -82,7 +80,7 @@ class FactureFournisseurController extends Controller
 
         $facture->update([
             'fournisseur_id'  => $request->fournisseur_id,
-            'bon_commande_id' => $request->bon_commande_id,
+            'bon_commande_id' => $request->bon_commande_id ?? $facture->bon_commande_id,
             'date_facture'    => $request->date_facture,
             'date_echeance'   => $request->date_echeance,
             'montant_ht'      => $request->montant_ht,
@@ -90,13 +88,16 @@ class FactureFournisseurController extends Controller
             'montant_ttc'     => $montantTtc,
         ]);
 
-        return redirect()->route('appro.factures.index')->with('success', 'Facture modifiée avec succès.');
+        return redirect()->route('appro.factures.index')
+            ->with('success', 'Facture modifiée avec succès.');
     }
 
     public function destroy(FactureFournisseur $facture)
     {
+        ArchiveController::archiver('facture_fournisseur', $facture);
         $facture->delete();
-        return redirect()->route('appro.factures.index')->with('success', 'Facture supprimée avec succès.');
+        return redirect()->route('appro.factures.index')
+            ->with('success', 'Facture supprimée et archivée en XML.');
     }
 
     public function reglerFacture(Request $request, FactureFournisseur $facture)
@@ -107,7 +108,6 @@ class FactureFournisseurController extends Controller
 
         $nouveauMontantRegle = $facture->montant_regle + $request->montant_regle;
 
-        // Plafonner au montant TTC
         if ($nouveauMontantRegle >= $facture->montant_ttc) {
             $facture->update([
                 'montant_regle' => $facture->montant_ttc,
@@ -120,7 +120,8 @@ class FactureFournisseurController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('success', 'Règlement enregistré avec succès.');
+        return redirect()->back()
+            ->with('success', 'Règlement enregistré avec succès.');
     }
 
     public function imprimer(FactureFournisseur $facture)

@@ -31,7 +31,8 @@ class ClientController extends Controller
         ]);
 
         Client::create($request->all());
-        return redirect()->route('clients.index')->with('success', 'Client créé avec succès.');
+        return redirect()->route('clients.index')
+            ->with('success', 'Client créé avec succès.');
     }
 
     public function show(Client $client)
@@ -57,12 +58,15 @@ class ClientController extends Controller
         ]);
 
         $client->update($request->all());
-        return redirect()->route('clients.index')->with('success', 'Client modifié avec succès.');
+        return redirect()->route('clients.index')
+            ->with('success', 'Client modifié avec succès.');
     }
 
     public function destroy(Client $client)
     {
+        ArchiveController::archiver('client', $client);
         $client->delete();
-        return redirect()->route('clients.index')->with('success', 'Client supprimé avec succès.');
+        return redirect()->route('clients.index')
+            ->with('success', 'Client supprimé et archivé en XML.');
     }
 }

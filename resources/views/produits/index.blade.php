@@ -2,60 +2,73 @@
 @section('title', 'Produits')
 
 @section('content')
-<div class="flex justify-between items-center mb-6">
-    <h3 class="text-lg font-semibold text-gray-700">Liste des produits</h3>
-    <a href="{{ route('produits.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-        + Nouveau produit
-    </a>
+<div class="page-header">
+    <h1 class="page-title">Produits</h1>
+    @can('produits.creer')
+    <a href="{{ route('produits.create') }}" class="btn btn-primary">+ Nouveau produit</a>
+    @endcan
 </div>
 
-<div class="bg-white rounded-xl shadow overflow-hidden">
-    <table class="w-full text-sm">
-        <thead class="bg-gray-50 text-gray-600">
-            <tr>
-                <th class="px-4 py-3 text-left">Code</th>
-                <th class="px-4 py-3 text-left">Nom</th>
-                <th class="px-4 py-3 text-left">Famille</th>
-                <th class="px-4 py-3 text-left">Stock</th>
-                <th class="px-4 py-3 text-left">Prix achat</th>
-                <th class="px-4 py-3 text-left">Prix vente</th>
-                <th class="px-4 py-3 text-left">Type</th>
-                <th class="px-4 py-3 text-left">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-            @forelse($produits as $produit)
-            <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3 font-mono text-xs">{{ $produit->code }}</td>
-                <td class="px-4 py-3 font-medium">{{ $produit->nom }}</td>
-                <td class="px-4 py-3 text-gray-500">{{ $produit->famille->nom ?? '-' }}</td>
-                <td class="px-4 py-3">
-                    <span class="{{ $produit->estEnRuptureDeStock() ? 'text-red-600 font-bold' : 'text-green-600' }}">
-                        {{ $produit->stock_actuel }} {{ $produit->unite }}
-                    </span>
-                </td>
-                <td class="px-4 py-3">{{ number_format($produit->prix_achat, 0, ',', ' ') }}</td>
-                <td class="px-4 py-3">{{ number_format($produit->prix_vente, 0, ',', ' ') }}</td>
-                <td class="px-4 py-3">
-                    <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">{{ $produit->type }}</span>
-                </td>
-                <td class="px-4 py-3 flex space-x-2">
-                    <a href="{{ route('produits.show', $produit) }}" class="text-blue-600 hover:underline">Voir</a>
-                    <a href="{{ route('produits.edit', $produit) }}" class="text-yellow-600 hover:underline">Modifier</a>
-                    <form action="{{ route('produits.destroy', $produit) }}" method="POST"
-                          onsubmit="return confirm('Supprimer ce produit ?')">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:underline">Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="8" class="px-4 py-6 text-center text-gray-400">Aucun produit enregistré.</td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-    <div class="px-4 py-3">{{ $produits->links() }}</div>
+<div class="card">
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Nom</th>
+                    <th>Famille</th>
+                    <th>Stock</th>
+                    <th>Prix achat</th>
+                    <th>Prix vente</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($produits as $produit)
+                <tr>
+                    <td class="font-mono text-400">{{ $produit->code }}</td>
+                    <td class="fw-600 text-900">{{ $produit->nom }}</td>
+                    <td class="text-500">{{ $produit->famille->nom ?? '—' }}</td>
+                    <td>
+                        @if($produit->estEnRuptureDeStock())
+                            <span class="badge badge-danger">{{ $produit->stock_actuel }} {{ $produit->unite }}</span>
+                        @else
+                            <span class="badge badge-success">{{ $produit->stock_actuel }} {{ $produit->unite }}</span>
+                        @endif
+                    </td>
+                    <td class="text-700">{{ number_format($produit->prix_achat, 0, ',', ' ') }}</td>
+                    <td class="fw-500 text-accent">{{ number_format($produit->prix_vente, 0, ',', ' ') }}</td>
+                    <td><span class="badge badge-neutral">{{ $produit->type }}</span></td>
+                    <td class="actions-cell">
+                        @can('produits.voir')
+                        <a href="{{ route('produits.show', $produit) }}" class="btn btn-secondary btn-sm">Voir</a>
+                        @endcan
+                        @can('produits.modifier')
+                        <a href="{{ route('produits.edit', $produit) }}" class="btn btn-warning btn-sm">Modifier</a>
+                        @endcan
+                        @can('produits.supprimer')
+                        <form action="{{ route('produits.destroy', $produit) }}" method="POST" style="display:inline;"
+                              onsubmit="return confirm('Supprimer ce produit ?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                        </form>
+                        @endcan
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📦</div>
+                            <div class="empty-state-text">Aucun produit enregistré.</div>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    <div style="padding: 8px 16px;">{{ $produits->links() }}</div>
 </div>
 @endsection

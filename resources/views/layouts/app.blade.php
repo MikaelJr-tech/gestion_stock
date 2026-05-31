@@ -1064,15 +1064,19 @@
             @endif
 
             @role('Administrateur')
-            <div class="nav-group-label">Administration</div>
-            <a href="{{ route('utilisateurs.index') }}"
-               class="nav-link {{ request()->routeIs('utilisateurs.*') ? 'active' : '' }}">
-                <span class="nav-icon">👤</span> Utilisateurs
-            </a>
-            <a href="{{ route('groupes.index') }}"
-               class="nav-link {{ request()->routeIs('groupes.*') ? 'active' : '' }}">
-                <span class="nav-icon">🔐</span> Groupes & Droits
-            </a>
+                <div class="nav-group-label">Administration</div>
+                <a href="{{ route('utilisateurs.index') }}"
+                class="nav-link {{ request()->routeIs('utilisateurs.*') ? 'active' : '' }}">
+                    <span class="nav-icon">👤</span> Utilisateurs
+                </a>
+                <a href="{{ route('groupes.index') }}"
+                class="nav-link {{ request()->routeIs('groupes.*') ? 'active' : '' }}">
+                    <span class="nav-icon">🔐</span> Groupes & Droits
+                </a>
+                <a href="{{ route('archives.index') }}"
+                class="nav-link {{ request()->routeIs('archives.*') ? 'active' : '' }}">
+                    <span class="nav-icon">🗄</span> Archives XML
+                </a>
             @endrole
 
         </nav>

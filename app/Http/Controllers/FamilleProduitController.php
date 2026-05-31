@@ -26,7 +26,8 @@ class FamilleProduitController extends Controller
         ]);
 
         FamilleProduit::create($request->all());
-        return redirect()->route('familles.index')->with('success', 'Famille créée avec succès.');
+        return redirect()->route('familles.index')
+            ->with('success', 'Famille créée avec succès.');
     }
 
     public function show(FamilleProduit $famille)
@@ -48,12 +49,15 @@ class FamilleProduitController extends Controller
         ]);
 
         $famille->update($request->all());
-        return redirect()->route('familles.index')->with('success', 'Famille modifiée avec succès.');
+        return redirect()->route('familles.index')
+            ->with('success', 'Famille modifiée avec succès.');
     }
 
     public function destroy(FamilleProduit $famille)
     {
+        ArchiveController::archiver('famille_produit', $famille);
         $famille->delete();
-        return redirect()->route('familles.index')->with('success', 'Famille supprimée avec succès.');
+        return redirect()->route('familles.index')
+            ->with('success', 'Famille supprimée et archivée en XML.');
     }
 }

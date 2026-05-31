@@ -51,11 +51,11 @@ class BonSortieController extends Controller
                 'quantite'        => $ligne['quantite'],
                 'valeur_unitaire' => $ligne['valeur_unitaire'],
             ]);
-
             Produit::find($ligne['produit_id'])->decrement('stock_actuel', $ligne['quantite']);
         }
 
-        return redirect()->route('ventes.bons-sortie.index')->with('success', 'Bon de sortie créé avec succès.');
+        return redirect()->route('ventes.bons-sortie.index')
+            ->with('success', 'Bon de sortie créé avec succès.');
     }
 
     public function show(BonSortie $bonSortie)
@@ -83,7 +83,6 @@ class BonSortieController extends Controller
             'produits.*.valeur_unitaire' => 'required|numeric|min:0',
         ]);
 
-        // Annuler l'ancien stock
         foreach ($bonSortie->lignes as $ligne) {
             $ligne->produit->increment('stock_actuel', $ligne->quantite);
         }
@@ -98,21 +97,28 @@ class BonSortieController extends Controller
                 'quantite'        => $ligne['quantite'],
                 'valeur_unitaire' => $ligne['valeur_unitaire'],
             ]);
-
             Produit::find($ligne['produit_id'])->decrement('stock_actuel', $ligne['quantite']);
         }
 
-        return redirect()->route('ventes.bons-sortie.index')->with('success', 'Bon de sortie modifié avec succès.');
+        return redirect()->route('ventes.bons-sortie.index')
+            ->with('success', 'Bon de sortie modifié avec succès.');
     }
 
     public function destroy(BonSortie $bonSortie)
     {
+        $bonSortie->load('lignes.produit');
+
+        // Restaurer le stock
         foreach ($bonSortie->lignes as $ligne) {
             $ligne->produit->increment('stock_actuel', $ligne->quantite);
         }
 
+        // Archiver
+        ArchiveController::archiver('bon_sortie', $bonSortie);
+
         $bonSortie->delete();
-        return redirect()->route('ventes.bons-sortie.index')->with('success', 'Bon de sortie supprimé avec succès.');
+        return redirect()->route('ventes.bons-sortie.index')
+            ->with('success', 'Bon de sortie supprimé et archivé en XML.');
     }
 
     public function imprimer(BonSortie $bonSortie)

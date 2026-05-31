@@ -21,13 +21,14 @@ class BanqueController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nom'            => 'required|string|max:255',
-            'numero_compte'  => 'nullable|string|max:100',
-            'solde'          => 'required|numeric|min:0',
+            'nom'           => 'required|string|max:255',
+            'numero_compte' => 'nullable|string|max:100',
+            'solde'         => 'required|numeric|min:0',
         ]);
 
         Banque::create($request->all());
-        return redirect()->route('banques.index')->with('success', 'Banque créée avec succès.');
+        return redirect()->route('banques.index')
+            ->with('success', 'Banque créée avec succès.');
     }
 
     public function show(Banque $banque)
@@ -49,12 +50,15 @@ class BanqueController extends Controller
         ]);
 
         $banque->update($request->all());
-        return redirect()->route('banques.index')->with('success', 'Banque modifiée avec succès.');
+        return redirect()->route('banques.index')
+            ->with('success', 'Banque modifiée avec succès.');
     }
 
     public function destroy(Banque $banque)
     {
+        ArchiveController::archiver('banque', $banque);
         $banque->delete();
-        return redirect()->route('banques.index')->with('success', 'Banque supprimée avec succès.');
+        return redirect()->route('banques.index')
+            ->with('success', 'Banque supprimée et archivée en XML.');
     }
 }

@@ -18,6 +18,7 @@ use App\Http\Controllers\BonSortieController;
 use App\Http\Controllers\RapportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GroupeController;
+use App\Http\Controllers\ArchiveController;
 
 Route::get('/', fn() => redirect()->route('dashboard'));
 
@@ -326,6 +327,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('groupes/{groupe}/edit', [GroupeController::class, 'edit'])->name('groupes.edit');
         Route::put('groupes/{groupe}', [GroupeController::class, 'update'])->name('groupes.update');
         Route::delete('groupes/{groupe}', [GroupeController::class, 'destroy'])->name('groupes.destroy');
+
+        // Archives XML
+        Route::post('archives/restaurer', [ArchiveController::class, 'restaurer'])->name('archives.restaurer');
+        Route::get('archives', [ArchiveController::class, 'index'])->name('archives.index');
+        Route::get('archives/{nom}/telecharger', [ArchiveController::class, 'telecharger'])->name('archives.telecharger');
+        Route::delete('archives/{nom}', [ArchiveController::class, 'supprimerArchive'])->name('archives.supprimer');
     });
 });
 

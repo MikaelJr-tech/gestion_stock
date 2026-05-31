@@ -2,44 +2,81 @@
 @section('title', 'Famille : ' . $famille->nom)
 
 @section('content')
-<div class="mb-4">
-    <a href="{{ route('familles.index') }}" class="text-sm text-blue-600 hover:underline">← Retour aux familles</a>
+<a href="{{ route('familles.index') }}" class="back-link">← Retour aux familles</a>
+
+<div class="page-header mb-20">
+    <h1 class="page-title">{{ $famille->nom }}</h1>
+    @can('familles.modifier')
+    <a href="{{ route('familles.edit', $famille) }}" class="btn btn-warning">Modifier</a>
+    @endcan
 </div>
 
-<div class="bg-white rounded-xl shadow p-6 mb-6">
-    <h3 class="text-lg font-semibold text-gray-700 mb-2">{{ $famille->nom }}</h3>
-    <p class="text-sm text-gray-500">{{ $famille->description ?? 'Aucune description.' }}</p>
-</div>
-
-<div class="bg-white rounded-xl shadow overflow-hidden">
-    <div class="px-6 py-4 border-b flex justify-between items-center">
-        <h4 class="font-semibold text-gray-700">Produits de cette famille</h4>
-        <a href="{{ route('produits.create') }}" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">+ Ajouter</a>
+<div class="grid-2 mb-20" style="align-items: start;">
+    <div class="card">
+        <div class="card-header"><span class="card-title">Informations</span></div>
+        <div class="card-body">
+            <div class="detail-row">
+                <span class="detail-label">Nom</span>
+                <span class="detail-value">{{ $famille->nom }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Description</span>
+                <span class="detail-value">{{ $famille->description ?? '—' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Nombre de produits</span>
+                <span class="detail-value">
+                    <span class="badge badge-accent">{{ $produits->total() }}</span>
+                </span>
+            </div>
+        </div>
     </div>
-    <table class="w-full text-sm">
-        <thead class="bg-gray-50 text-gray-600">
-            <tr>
-                <th class="px-4 py-3 text-left">Code</th>
-                <th class="px-4 py-3 text-left">Nom</th>
-                <th class="px-4 py-3 text-left">Stock actuel</th>
-                <th class="px-4 py-3 text-left">Prix vente</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-            @forelse($produits as $produit)
-            <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3">{{ $produit->code }}</td>
-                <td class="px-4 py-3">{{ $produit->nom }}</td>
-                <td class="px-4 py-3 {{ $produit->estEnRuptureDeStock() ? 'text-red-600 font-bold' : '' }}">
-                    {{ $produit->stock_actuel }} {{ $produit->unite }}
-                </td>
-                <td class="px-4 py-3">{{ number_format($produit->prix_vente, 0, ',', ' ') }} FCFA</td>
-            </tr>
-            @empty
-            <tr><td colspan="4" class="px-4 py-6 text-center text-gray-400">Aucun produit dans cette famille.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-    <div class="px-4 py-3">{{ $produits->links() }}</div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Produits de cette famille</span>
+            @can('produits.creer')
+            <a href="{{ route('produits.create') }}" class="btn btn-primary btn-sm">+ Ajouter</a>
+            @endcan
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Nom</th>
+                        <th>Stock</th>
+                        <th>Prix vente</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($produits as $produit)
+                    <tr>
+                        <td class="font-mono text-400">{{ $produit->code }}</td>
+                        <td class="fw-500 text-900">{{ $produit->nom }}</td>
+                        <td>
+                            @if($produit->estEnRuptureDeStock())
+                                <span class="badge badge-danger">{{ $produit->stock_actuel }} {{ $produit->unite }}</span>
+                            @else
+                                <span class="badge badge-success">{{ $produit->stock_actuel }} {{ $produit->unite }}</span>
+                            @endif
+                        </td>
+                        <td class="fw-500 text-accent">{{ number_format($produit->prix_vente, 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📦</div>
+                                <div class="empty-state-text">Aucun produit dans cette famille.</div>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div style="padding: 8px 16px;">{{ $produits->links() }}</div>
+    </div>
 </div>
 @endsection

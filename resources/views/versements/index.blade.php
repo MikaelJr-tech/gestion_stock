@@ -2,47 +2,61 @@
 @section('title', 'Versements banque')
 
 @section('content')
-<div class="flex justify-between items-center mb-6">
-    <h3 class="text-lg font-semibold text-gray-700">Versements en banque</h3>
-    <a href="{{ route('versements.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-        + Nouveau versement
-    </a>
+<div class="page-header">
+    <h1 class="page-title">Versements en banque</h1>
+    @can('versements.creer')
+    <a href="{{ route('versements.create') }}" class="btn btn-primary">+ Nouveau versement</a>
+    @endcan
 </div>
 
-<div class="bg-white rounded-xl shadow overflow-hidden">
-    <table class="w-full text-sm">
-        <thead class="bg-gray-50 text-gray-600">
-            <tr>
-                <th class="px-4 py-3 text-left">Date</th>
-                <th class="px-4 py-3 text-left">Banque</th>
-                <th class="px-4 py-3 text-left">Montant</th>
-                <th class="px-4 py-3 text-left">Référence</th>
-                <th class="px-4 py-3 text-left">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-            @forelse($versements as $versement)
-            <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3">{{ $versement->date_versement->format('d/m/Y') }}</td>
-                <td class="px-4 py-3 font-medium">{{ $versement->banque->nom }}</td>
-                <td class="px-4 py-3 font-bold text-green-600">
-                    {{ number_format($versement->montant, 0, ',', ' ') }} FCFA
-                </td>
-                <td class="px-4 py-3 font-mono text-xs">{{ $versement->reference ?? '-' }}</td>
-                <td class="px-4 py-3 flex space-x-2">
-                    <a href="{{ route('versements.edit', $versement) }}" class="text-yellow-600 hover:underline">Modifier</a>
-                    <form action="{{ route('versements.destroy', $versement) }}" method="POST"
-                          onsubmit="return confirm('Supprimer ce versement ?')">
-                        @csrf @method('DELETE')
-                        <button class="text-red-600 hover:underline">Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Aucun versement enregistré.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-    <div class="px-4 py-3">{{ $versements->links() }}</div>
+<div class="card">
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Banque</th>
+                    <th>Montant</th>
+                    <th>Référence</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($versements as $versement)
+                <tr>
+                    <td class="text-500">{{ $versement->date_versement->format('d/m/Y') }}</td>
+                    <td class="fw-600 text-900">{{ $versement->banque->nom }}</td>
+                    <td class="fw-700 text-success">{{ number_format($versement->montant, 0, ',', ' ') }} FCFA</td>
+                    <td class="font-mono text-400">{{ $versement->reference ?? '—' }}</td>
+                    <td class="actions-cell">
+                        @can('versements.voir')
+                        <a href="{{ route('versements.show', $versement) }}" class="btn btn-secondary btn-sm">Voir</a>
+                        @endcan
+                        @can('versements.modifier')
+                        <a href="{{ route('versements.edit', $versement) }}" class="btn btn-warning btn-sm">Modifier</a>
+                        @endcan
+                        @can('versements.supprimer')
+                        <form action="{{ route('versements.destroy', $versement) }}" method="POST" style="display:inline;"
+                              onsubmit="return confirm('Supprimer ce versement ?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                        </form>
+                        @endcan
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <div class="empty-state-text">Aucun versement enregistré.</div>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    <div style="padding: 8px 16px;">{{ $versements->links() }}</div>
 </div>
 @endsection

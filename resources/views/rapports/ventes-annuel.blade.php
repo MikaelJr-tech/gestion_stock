@@ -2,48 +2,91 @@
 @section('title', 'État des ventes annuel')
 
 @section('content')
-<div class="bg-white rounded-xl shadow p-6 mb-6">
-    <form method="GET" class="flex items-end space-x-4">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Année</label>
-            <select name="annee" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                @for($y = date('Y'); $y >= date('Y') - 5; $y--)
-                    <option value="{{ $y }}" {{ $annee == $y ? 'selected' : '' }}>{{ $y }}</option>
-                @endfor
-            </select>
-        </div>
-        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">🔍 Filtrer</button>
-    </form>
+
+<div class="flex gap-8 mb-16">
+    <a href="{{ route('rapports.ventes-jour') }}"
+       class="btn {{ request()->routeIs('rapports.ventes-jour') ? 'btn-primary' : 'btn-secondary' }}">
+        📅 Par jour
+    </a>
+    <a href="{{ route('rapports.ventes-annuel') }}"
+       class="btn {{ request()->routeIs('rapports.ventes-annuel') ? 'btn-primary' : 'btn-secondary' }}">
+        📆 Annuel
+    </a>
 </div>
 
-<div class="bg-white rounded-xl shadow overflow-hidden">
-    <div class="px-6 py-4 border-b flex justify-between">
-        <h3 class="font-semibold text-gray-700">Ventes de l'année {{ $annee }}</h3>
-        <span class="text-lg font-bold text-green-600">Total : {{ number_format($total, 0, ',', ' ') }} FCFA</span>
+<div class="card mb-16">
+    <div class="card-body">
+        <form method="GET" class="flex gap-8" style="align-items: flex-end;">
+            <div class="form-group mb-0">
+                <label class="form-label">Année</label>
+                <select name="annee" class="form-select" style="width:150px;">
+                    @for($y = date('Y'); $y >= date('Y') - 5; $y--)
+                        <option value="{{ $y }}" {{ $annee == $y ? 'selected' : '' }}>{{ $y }}</option>
+                    @endfor
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">🔍 Filtrer</button>
+        </form>
     </div>
-    <table class="w-full text-sm">
-        <thead class="bg-gray-50 text-gray-600">
-            <tr>
-                <th class="px-4 py-3 text-left">Numéro</th>
-                <th class="px-4 py-3 text-left">Client</th>
-                <th class="px-4 py-3 text-left">Date</th>
-                <th class="px-4 py-3 text-left">Type</th>
-                <th class="px-4 py-3 text-left">Montant TTC</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-            @forelse($factures as $facture)
-            <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3 font-mono text-xs">{{ $facture->numero }}</td>
-                <td class="px-4 py-3">{{ $facture->client->nom }}</td>
-                <td class="px-4 py-3">{{ $facture->date_facture->format('d/m/Y') }}</td>
-                <td class="px-4 py-3"><span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">{{ $facture->type_vente }}</span></td>
-                <td class="px-4 py-3 font-bold">{{ number_format($facture->montant_ttc, 0, ',', ' ') }} FCFA</td>
-            </tr>
-            @empty
-            <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Aucune vente pour cette année.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Ventes de l'année {{ $annee }}</span>
+        <span class="fw-700 text-success" style="font-size:15px;">
+            Total : {{ number_format($total, 0, ',', ' ') }} FCFA
+        </span>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Numéro</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Statut</th>
+                    <th>Montant TTC</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($factures as $facture)
+                <tr>
+                    <td class="font-mono">{{ $facture->numero }}</td>
+                    <td class="fw-500 text-900">{{ $facture->client->nom }}</td>
+                    <td class="text-500">{{ $facture->date_facture->format('d/m/Y') }}</td>
+                    <td><span class="badge badge-accent">{{ $facture->type_vente }}</span></td>
+                    <td>
+                        @if($facture->statut === 'réglée')
+                            <span class="badge badge-success">{{ $facture->statut }}</span>
+                        @elseif($facture->statut === 'partielle')
+                            <span class="badge badge-warning">{{ $facture->statut }}</span>
+                        @else
+                            <span class="badge badge-danger">{{ $facture->statut }}</span>
+                        @endif
+                    </td>
+                    <td class="fw-600">{{ number_format($facture->montant_ttc, 0, ',', ' ') }} FCFA</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🧾</div>
+                            <div class="empty-state-text">Aucune vente pour cette année.</div>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+            @if($factures->count() > 0)
+            <tfoot>
+                <tr>
+                    <td colspan="5" class="text-right fw-700">TOTAL :</td>
+                    <td class="fw-700 text-success">{{ number_format($total, 0, ',', ' ') }} FCFA</td>
+                </tr>
+            </tfoot>
+            @endif
+        </table>
+    </div>
 </div>
 @endsection

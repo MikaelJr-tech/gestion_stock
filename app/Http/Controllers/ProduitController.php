@@ -37,7 +37,8 @@ class ProduitController extends Controller
         ]);
 
         Produit::create($request->all());
-        return redirect()->route('produits.index')->with('success', 'Produit créé avec succès.');
+        return redirect()->route('produits.index')
+            ->with('success', 'Produit créé avec succès.');
     }
 
     public function show(Produit $produit)
@@ -69,13 +70,16 @@ class ProduitController extends Controller
         ]);
 
         $produit->update($request->all());
-        return redirect()->route('produits.index')->with('success', 'Produit modifié avec succès.');
+        return redirect()->route('produits.index')
+            ->with('success', 'Produit modifié avec succès.');
     }
 
     public function destroy(Produit $produit)
     {
+        ArchiveController::archiver('produit', $produit);
         $produit->delete();
-        return redirect()->route('produits.index')->with('success', 'Produit supprimé avec succès.');
+        return redirect()->route('produits.index')
+            ->with('success', 'Produit supprimé et archivé en XML.');
     }
 
     public function fractionner(Produit $produit)

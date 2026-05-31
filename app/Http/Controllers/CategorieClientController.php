@@ -26,7 +26,8 @@ class CategorieClientController extends Controller
         ]);
 
         CategorieClient::create($request->all());
-        return redirect()->route('categories.index')->with('success', 'Catégorie créée avec succès.');
+        return redirect()->route('categories.index')
+            ->with('success', 'Catégorie créée avec succès.');
     }
 
     public function show(CategorieClient $category)
@@ -48,12 +49,15 @@ class CategorieClientController extends Controller
         ]);
 
         $category->update($request->all());
-        return redirect()->route('categories.index')->with('success', 'Catégorie modifiée avec succès.');
+        return redirect()->route('categories.index')
+            ->with('success', 'Catégorie modifiée avec succès.');
     }
 
     public function destroy(CategorieClient $category)
     {
+        ArchiveController::archiver('categorie_client', $category);
         $category->delete();
-        return redirect()->route('categories.index')->with('success', 'Catégorie supprimée avec succès.');
+        return redirect()->route('categories.index')
+            ->with('success', 'Catégorie supprimée et archivée en XML.');
     }
 }

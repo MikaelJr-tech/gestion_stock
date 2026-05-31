@@ -2,54 +2,110 @@
 @section('title', $produit->nom)
 
 @section('content')
-<div class="mb-4">
-    <a href="{{ route('produits.index') }}" class="text-sm text-blue-600 hover:underline">← Retour aux produits</a>
-</div>
+<a href="{{ route('produits.index') }}" class="back-link">← Retour aux produits</a>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 bg-white rounded-xl shadow p-6">
-        <div class="flex justify-between items-start mb-6">
-            <div>
-                <h3 class="text-xl font-bold text-gray-800">{{ $produit->nom }}</h3>
-                <p class="text-sm text-gray-500 font-mono">{{ $produit->code }}</p>
-            </div>
-            <span class="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-700">{{ $produit->type }}</span>
+<div class="grid-2 mb-20" style="align-items: start;">
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">{{ $produit->nom }}</span>
+            <span class="badge badge-neutral">{{ $produit->type }}</span>
         </div>
-
-        <div class="grid grid-cols-2 gap-4 text-sm">
-            <div><span class="text-gray-500">Famille :</span> <span class="font-medium">{{ $produit->famille->nom ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Unité :</span> <span class="font-medium">{{ $produit->unite }}</span></div>
-            <div><span class="text-gray-500">Prix achat :</span> <span class="font-medium">{{ number_format($produit->prix_achat, 0, ',', ' ') }} FCFA</span></div>
-            <div><span class="text-gray-500">Prix vente :</span> <span class="font-medium">{{ number_format($produit->prix_vente, 0, ',', ' ') }} FCFA</span></div>
-            <div><span class="text-gray-500">Stock actuel :</span>
-                <span class="font-bold {{ $produit->estEnRuptureDeStock() ? 'text-red-600' : 'text-green-600' }}">
-                    {{ $produit->stock_actuel }} {{ $produit->unite }}
+        <div class="card-body">
+            <div class="detail-row">
+                <span class="detail-label">Code</span>
+                <span class="detail-value font-mono">{{ $produit->code }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Famille</span>
+                <span class="detail-value">{{ $produit->famille->nom ?? '—' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Unité</span>
+                <span class="detail-value">{{ $produit->unite }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Prix achat</span>
+                <span class="detail-value">{{ number_format($produit->prix_achat, 0, ',', ' ') }} FCFA</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Prix vente</span>
+                <span class="detail-value fw-600 text-accent">{{ number_format($produit->prix_vente, 0, ',', ' ') }} FCFA</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Stock actuel</span>
+                <span class="detail-value">
+                    @if($produit->estEnRuptureDeStock())
+                        <span class="badge badge-danger">{{ $produit->stock_actuel }} {{ $produit->unite }}</span>
+                    @else
+                        <span class="badge badge-success">{{ $produit->stock_actuel }} {{ $produit->unite }}</span>
+                    @endif
                 </span>
             </div>
-            <div><span class="text-gray-500">Stock minimum :</span> <span class="font-medium">{{ $produit->stock_minimum }}</span></div>
+            <div class="detail-row">
+                <span class="detail-label">Stock minimum</span>
+                <span class="detail-value">{{ $produit->stock_minimum }}</span>
+            </div>
             @if($produit->date_expiration)
-            <div><span class="text-gray-500">Date expiration :</span> <span class="font-medium">{{ $produit->date_expiration->format('d/m/Y') }}</span></div>
+            <div class="detail-row">
+                <span class="detail-label">Date expiration</span>
+                <span class="detail-value">{{ $produit->date_expiration->format('d/m/Y') }}</span>
+            </div>
             @endif
         </div>
-
-        <div class="flex space-x-3 mt-6">
-            <a href="{{ route('produits.edit', $produit) }}" class="px-4 py-2 text-sm bg-yellow-500 text-white rounded-lg">Modifier</a>
-            @if($produit->type === 'père')
-            <a href="{{ route('produits.fractionner', $produit) }}" class="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg">Fractionner</a>
-            @endif
+        <div class="card-header" style="border-top: 1px solid var(--border); border-bottom: none;">
+            <div class="flex gap-8">
+                @can('produits.modifier')
+                <a href="{{ route('produits.edit', $produit) }}" class="btn btn-warning btn-sm">Modifier</a>
+                @endcan
+                @if($produit->type === 'père')
+                @can('produits.voir')
+                <a href="{{ route('produits.fractionner', $produit) }}" class="btn btn-info btn-sm">Fractionner</a>
+                @endcan
+                @endif
+            </div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-6">
-        <h4 class="font-semibold text-gray-700 mb-4">Produits fils</h4>
-        @forelse($produit->produitsFils as $fils)
-        <div class="text-sm py-2 border-b">
-            <p class="font-medium">{{ $fils->nom }}</p>
-            <p class="text-gray-500">Stock : {{ $fils->stock_actuel }} {{ $fils->unite }}</p>
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Produits fils</span>
         </div>
-        @empty
-        <p class="text-sm text-gray-400">Aucun produit fils.</p>
-        @endforelse
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Stock</th>
+                        <th>Prix vente</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($produit->produitsFils as $fils)
+                    <tr>
+                        <td class="fw-500 text-900">{{ $fils->nom }}</td>
+                        <td>
+                            @if($fils->estEnRuptureDeStock())
+                                <span class="badge badge-danger">{{ $fils->stock_actuel }}</span>
+                            @else
+                                <span class="badge badge-success">{{ $fils->stock_actuel }}</span>
+                            @endif
+                        </td>
+                        <td class="text-accent fw-500">{{ number_format($fils->prix_vente, 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="3">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📦</div>
+                                <div class="empty-state-text">Aucun produit fils.</div>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 @endsection

@@ -25,13 +25,13 @@ class BonEntreeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'type'                     => 'required|in:don,retour,ajustement,autre',
-            'date_entree'              => 'required|date',
-            'source'                   => 'nullable|string|max:255',
-            'notes'                    => 'nullable|string',
-            'produits'                 => 'required|array|min:1',
-            'produits.*.produit_id'    => 'required|exists:produits,id',
-            'produits.*.quantite'      => 'required|integer|min:1',
+            'type'                       => 'required|in:don,retour,ajustement,autre',
+            'date_entree'                => 'required|date',
+            'source'                     => 'nullable|string|max:255',
+            'notes'                      => 'nullable|string',
+            'produits'                   => 'required|array|min:1',
+            'produits.*.produit_id'      => 'required|exists:produits,id',
+            'produits.*.quantite'        => 'required|integer|min:1',
             'produits.*.valeur_unitaire' => 'required|numeric|min:0',
         ]);
 
@@ -53,12 +53,11 @@ class BonEntreeController extends Controller
                 'quantite'        => $ligne['quantite'],
                 'valeur_unitaire' => $ligne['valeur_unitaire'],
             ]);
-
-            // Mettre à jour le stock
             Produit::find($ligne['produit_id'])->increment('stock_actuel', $ligne['quantite']);
         }
 
-        return redirect()->route('appro.bons-entree.index')->with('success', 'Bon d\'entrée créé avec succès.');
+        return redirect()->route('appro.bons-entree.index')
+            ->with('success', 'Bon d\'entrée créé avec succès.');
     }
 
     public function show(BonEntree $bonEntree)
@@ -87,7 +86,6 @@ class BonEntreeController extends Controller
             'produits.*.valeur_unitaire' => 'required|numeric|min:0',
         ]);
 
-        // Annuler l'ancien stock
         foreach ($bonEntree->lignes as $ligne) {
             $ligne->produit->decrement('stock_actuel', $ligne->quantite);
         }
@@ -102,21 +100,28 @@ class BonEntreeController extends Controller
                 'quantite'        => $ligne['quantite'],
                 'valeur_unitaire' => $ligne['valeur_unitaire'],
             ]);
-
             Produit::find($ligne['produit_id'])->increment('stock_actuel', $ligne['quantite']);
         }
 
-        return redirect()->route('appro.bons-entree.index')->with('success', 'Bon d\'entrée modifié avec succès.');
+        return redirect()->route('appro.bons-entree.index')
+            ->with('success', 'Bon d\'entrée modifié avec succès.');
     }
 
     public function destroy(BonEntree $bonEntree)
     {
+        $bonEntree->load('lignes.produit');
+
+        // Annuler le stock avant suppression
         foreach ($bonEntree->lignes as $ligne) {
             $ligne->produit->decrement('stock_actuel', $ligne->quantite);
         }
 
+        // Archiver
+        ArchiveController::archiver('bon_entree', $bonEntree);
+
         $bonEntree->delete();
-        return redirect()->route('appro.bons-entree.index')->with('success', 'Bon d\'entrée supprimé avec succès.');
+        return redirect()->route('appro.bons-entree.index')
+            ->with('success', 'Bon d\'entrée supprimé et archivé en XML.');
     }
 
     public function imprimer(BonEntree $bonEntree)

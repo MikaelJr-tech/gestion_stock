@@ -2,53 +2,69 @@
 @section('title', 'Bons de sortie')
 
 @section('content')
-<div class="flex justify-between items-center mb-6">
-    <h3 class="text-lg font-semibold text-gray-700">Bons de sortie</h3>
-    <a href="{{ route('ventes.bons-sortie.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-        + Nouveau bon de sortie
-    </a>
+<div class="page-header">
+    <h1 class="page-title">Bons de sortie</h1>
+    @can('ventes.bons-sortie.creer')
+    <a href="{{ route('ventes.bons-sortie.create') }}" class="btn btn-primary">+ Nouveau bon de sortie</a>
+    @endcan
 </div>
 
-<div class="bg-white rounded-xl shadow overflow-hidden">
-    <table class="w-full text-sm">
-        <thead class="bg-gray-50 text-gray-600">
-            <tr>
-                <th class="px-4 py-3 text-left">Numéro</th>
-                <th class="px-4 py-3 text-left">Motif</th>
-                <th class="px-4 py-3 text-left">Date</th>
-                <th class="px-4 py-3 text-left">Créé par</th>
-                <th class="px-4 py-3 text-left">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-            @forelse($bons as $bon)
-            <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3 font-mono text-xs font-bold">{{ $bon->numero }}</td>
-                <td class="px-4 py-3">
-                    <span class="px-2 py-1 rounded-full text-xs
-                        {{ $bon->motif === 'périmé' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600' }}">
-                        {{ $bon->motif }}
-                    </span>
-                </td>
-                <td class="px-4 py-3">{{ $bon->date_sortie->format('d/m/Y') }}</td>
-                <td class="px-4 py-3">{{ $bon->user->name }}</td>
-                <td class="px-4 py-3">
-                    <div class="flex space-x-2">
-                        <a href="{{ route('ventes.bons-sortie.show', $bon) }}" class="text-blue-600 hover:underline">Voir</a>
-                        <a href="{{ route('ventes.bons-sortie.imprimer', $bon) }}" target="_blank" class="text-green-600 hover:underline">PDF</a>
-                        <form action="{{ route('ventes.bons-sortie.destroy', $bon) }}" method="POST"
+<div class="card">
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Numéro</th>
+                    <th>Motif</th>
+                    <th>Date</th>
+                    <th>Créé par</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($bons as $bon)
+                <tr>
+                    <td class="font-mono fw-600 text-900">{{ $bon->numero }}</td>
+                    <td>
+                        @if($bon->motif === 'périmé')
+                            <span class="badge badge-danger">{{ $bon->motif }}</span>
+                        @elseif($bon->motif === 'casse')
+                            <span class="badge badge-warning">{{ $bon->motif }}</span>
+                        @else
+                            <span class="badge badge-neutral">{{ $bon->motif }}</span>
+                        @endif
+                    </td>
+                    <td class="text-500">{{ $bon->date_sortie->format('d/m/Y') }}</td>
+                    <td class="text-500">{{ $bon->user->name }}</td>
+                    <td class="actions-cell">
+                        @can('ventes.bons-sortie.voir')
+                        <a href="{{ route('ventes.bons-sortie.show', $bon) }}" class="btn btn-secondary btn-sm">Voir</a>
+                        @endcan
+                        @can('ventes.bons-sortie.imprimer')
+                        <a href="{{ route('ventes.bons-sortie.imprimer', $bon) }}" target="_blank" class="btn btn-success btn-sm">PDF</a>
+                        @endcan
+                        @can('ventes.bons-sortie.supprimer')
+                        <form action="{{ route('ventes.bons-sortie.destroy', $bon) }}" method="POST" style="display:inline;"
                               onsubmit="return confirm('Supprimer ? Le stock sera restauré.')">
                             @csrf @method('DELETE')
-                            <button class="text-red-600 hover:underline">Supprimer</button>
+                            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
                         </form>
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Aucun bon de sortie.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-    <div class="px-4 py-3">{{ $bons->links() }}</div>
+                        @endcan
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📤</div>
+                            <div class="empty-state-text">Aucun bon de sortie.</div>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    <div style="padding: 8px 16px;">{{ $bons->links() }}</div>
 </div>
 @endsection

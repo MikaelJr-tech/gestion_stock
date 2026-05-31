@@ -21,15 +21,16 @@ class FournisseurController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nom'                  => 'required|string|max:255',
-            'telephone'            => 'nullable|string|max:20',
-            'email'                => 'nullable|email|max:255',
-            'adresse'              => 'nullable|string',
-            'numero_contribuable'  => 'nullable|string|max:100',
+            'nom'                 => 'required|string|max:255',
+            'telephone'           => 'nullable|string|max:20',
+            'email'               => 'nullable|email|max:255',
+            'adresse'             => 'nullable|string',
+            'numero_contribuable' => 'nullable|string|max:100',
         ]);
 
         Fournisseur::create($request->all());
-        return redirect()->route('fournisseurs.index')->with('success', 'Fournisseur créé avec succès.');
+        return redirect()->route('fournisseurs.index')
+            ->with('success', 'Fournisseur créé avec succès.');
     }
 
     public function show(Fournisseur $fournisseur)
@@ -46,20 +47,23 @@ class FournisseurController extends Controller
     public function update(Request $request, Fournisseur $fournisseur)
     {
         $request->validate([
-            'nom'                  => 'required|string|max:255',
-            'telephone'            => 'nullable|string|max:20',
-            'email'                => 'nullable|email|max:255',
-            'adresse'              => 'nullable|string',
-            'numero_contribuable'  => 'nullable|string|max:100',
+            'nom'                 => 'required|string|max:255',
+            'telephone'           => 'nullable|string|max:20',
+            'email'               => 'nullable|email|max:255',
+            'adresse'             => 'nullable|string',
+            'numero_contribuable' => 'nullable|string|max:100',
         ]);
 
         $fournisseur->update($request->all());
-        return redirect()->route('fournisseurs.index')->with('success', 'Fournisseur modifié avec succès.');
+        return redirect()->route('fournisseurs.index')
+            ->with('success', 'Fournisseur modifié avec succès.');
     }
 
     public function destroy(Fournisseur $fournisseur)
     {
+        ArchiveController::archiver('fournisseur', $fournisseur);
         $fournisseur->delete();
-        return redirect()->route('fournisseurs.index')->with('success', 'Fournisseur supprimé avec succès.');
+        return redirect()->route('fournisseurs.index')
+            ->with('success', 'Fournisseur supprimé et archivé en XML.');
     }
 }

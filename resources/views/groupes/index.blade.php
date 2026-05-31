@@ -2,39 +2,48 @@
 @section('title', 'Groupes & Droits')
 
 @section('content')
-<div class="flex justify-between items-center mb-6">
-    <h3 class="text-lg font-semibold text-gray-700">Groupes d'utilisateurs</h3>
-    <a href="{{ route('groupes.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-        + Nouveau groupe
-    </a>
+<div class="page-header">
+    <h1 class="page-title">Groupes & Droits</h1>
+    <a href="{{ route('groupes.create') }}" class="btn btn-primary">+ Nouveau groupe</a>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="grid-3">
     @forelse($groupes as $groupe)
-    <div class="bg-white rounded-xl shadow p-6">
-        <div class="flex justify-between items-start mb-4">
-            <h4 class="font-bold text-gray-800 text-lg">🔐 {{ $groupe->name }}</h4>
-            <div class="flex space-x-2">
-                <a href="{{ route('groupes.edit', $groupe) }}" class="text-yellow-600 hover:underline text-sm">Modifier</a>
-                <form action="{{ route('groupes.destroy', $groupe) }}" method="POST"
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">🔐 {{ $groupe->name }}</span>
+            <div class="flex gap-4">
+                <a href="{{ route('groupes.edit', $groupe) }}" class="btn btn-warning btn-sm">Modifier</a>
+                <form action="{{ route('groupes.destroy', $groupe) }}" method="POST" style="display:inline;"
                       onsubmit="return confirm('Supprimer ce groupe ?')">
                     @csrf @method('DELETE')
-                    <button class="text-red-600 hover:underline text-sm">Supprimer</button>
+                    <button type="submit" class="btn btn-danger btn-sm">Suppr.</button>
                 </form>
             </div>
         </div>
-        <p class="text-sm text-gray-500 mb-3">{{ $groupe->permissions->count() }} permission(s)</p>
-        <div class="flex flex-wrap gap-1">
-            @foreach($groupe->permissions->take(6) as $perm)
-            <span class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">{{ $perm->name }}</span>
-            @endforeach
-            @if($groupe->permissions->count() > 6)
-            <span class="px-2 py-1 bg-gray-100 text-gray-500 rounded text-xs">+{{ $groupe->permissions->count() - 6 }} autres</span>
-            @endif
+        <div class="card-body">
+            <p class="text-400 mb-12" style="font-size:12px;">
+                {{ $groupe->permissions->count() }} permission(s)
+            </p>
+            <div class="flex flex-wrap gap-4">
+                @foreach($groupe->permissions->take(6) as $perm)
+                    <span class="badge badge-accent" style="font-size:10px;">{{ $perm->name }}</span>
+                @endforeach
+                @if($groupe->permissions->count() > 6)
+                    <span class="badge badge-neutral" style="font-size:10px;">
+                        +{{ $groupe->permissions->count() - 6 }} autres
+                    </span>
+                @endif
+            </div>
         </div>
     </div>
     @empty
-    <div class="col-span-3 text-center text-gray-400 py-10">Aucun groupe créé.</div>
+    <div style="grid-column: span 3;">
+        <div class="empty-state">
+            <div class="empty-state-icon">🔐</div>
+            <div class="empty-state-text">Aucun groupe créé.</div>
+        </div>
+    </div>
     @endforelse
 </div>
 @endsection

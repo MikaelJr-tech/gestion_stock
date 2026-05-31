@@ -42,20 +42,21 @@ class FactureClientController extends Controller
         $regle      = $request->type_vente === 'comptant' ? $montantTtc : 0;
 
         FactureClient::create([
-            'client_id'    => $request->client_id,
-            'commande_id'  => $request->commande_id,
-            'user_id'      => auth()->id(),
-            'numero'       => $numero,
-            'date_facture' => $request->date_facture,
-            'montant_ht'   => $request->montant_ht,
-            'tva'          => $request->tva,
-            'montant_ttc'  => $montantTtc,
-            'montant_regle'=> $regle,
-            'statut'       => $statut,
-            'type_vente'   => $request->type_vente,
+            'client_id'     => $request->client_id,
+            'commande_id'   => $request->commande_id,
+            'user_id'       => auth()->id(),
+            'numero'        => $numero,
+            'date_facture'  => $request->date_facture,
+            'montant_ht'    => $request->montant_ht,
+            'tva'           => $request->tva,
+            'montant_ttc'   => $montantTtc,
+            'montant_regle' => $regle,
+            'statut'        => $statut,
+            'type_vente'    => $request->type_vente,
         ]);
 
-        return redirect()->route('ventes.factures.index')->with('success', 'Facture créée avec succès.');
+        return redirect()->route('ventes.factures.index')
+            ->with('success', 'Facture créée avec succès.');
     }
 
     public function show(FactureClient $facture)
@@ -85,7 +86,7 @@ class FactureClientController extends Controller
 
         $facture->update([
             'client_id'    => $request->client_id,
-            'commande_id'  => $request->commande_id,
+            'commande_id'  => $request->commande_id ?? $facture->commande_id,
             'date_facture' => $request->date_facture,
             'montant_ht'   => $request->montant_ht,
             'tva'          => $request->tva,
@@ -93,30 +94,40 @@ class FactureClientController extends Controller
             'type_vente'   => $request->type_vente,
         ]);
 
-        return redirect()->route('ventes.factures.index')->with('success', 'Facture modifiée avec succès.');
+        return redirect()->route('ventes.factures.index')
+            ->with('success', 'Facture modifiée avec succès.');
     }
 
     public function destroy(FactureClient $facture)
     {
+        ArchiveController::archiver('facture_client', $facture);
         $facture->delete();
-        return redirect()->route('ventes.factures.index')->with('success', 'Facture supprimée avec succès.');
+        return redirect()->route('ventes.factures.index')
+            ->with('success', 'Facture supprimée et archivée en XML.');
     }
 
     public function reglerFacture(Request $request, FactureClient $facture)
     {
         $request->validate([
-            'montant_regle' => 'required|numeric|min:0|max:' . $facture->resteAPayer(),
+            'montant_regle' => 'required|numeric|min:0.01',
         ]);
 
-        $facture->increment('montant_regle', $request->montant_regle);
+        $nouveauMontantRegle = $facture->montant_regle + $request->montant_regle;
 
-        if ($facture->montant_regle >= $facture->montant_ttc) {
-            $facture->update(['statut' => 'réglée']);
+        if ($nouveauMontantRegle >= $facture->montant_ttc) {
+            $facture->update([
+                'montant_regle' => $facture->montant_ttc,
+                'statut'        => 'réglée',
+            ]);
         } else {
-            $facture->update(['statut' => 'partielle']);
+            $facture->update([
+                'montant_regle' => $nouveauMontantRegle,
+                'statut'        => 'partielle',
+            ]);
         }
 
-        return redirect()->back()->with('success', 'Règlement enregistré avec succès.');
+        return redirect()->back()
+            ->with('success', 'Règlement enregistré avec succès.');
     }
 
     public function imprimer(FactureClient $facture)
