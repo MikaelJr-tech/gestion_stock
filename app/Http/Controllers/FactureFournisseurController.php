@@ -102,15 +102,22 @@ class FactureFournisseurController extends Controller
     public function reglerFacture(Request $request, FactureFournisseur $facture)
     {
         $request->validate([
-            'montant_regle' => 'required|numeric|min:0|max:' . $facture->resteAPayer(),
+            'montant_regle' => 'required|numeric|min:0.01',
         ]);
 
-        $facture->increment('montant_regle', $request->montant_regle);
+        $nouveauMontantRegle = $facture->montant_regle + $request->montant_regle;
 
-        if ($facture->montant_regle >= $facture->montant_ttc) {
-            $facture->update(['statut' => 'réglée']);
+        // Plafonner au montant TTC
+        if ($nouveauMontantRegle >= $facture->montant_ttc) {
+            $facture->update([
+                'montant_regle' => $facture->montant_ttc,
+                'statut'        => 'réglée',
+            ]);
         } else {
-            $facture->update(['statut' => 'partielle']);
+            $facture->update([
+                'montant_regle' => $nouveauMontantRegle,
+                'statut'        => 'partielle',
+            ]);
         }
 
         return redirect()->back()->with('success', 'Règlement enregistré avec succès.');

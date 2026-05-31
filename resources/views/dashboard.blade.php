@@ -2,126 +2,135 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
 
-    {{-- Carte : Total produits --}}
-    <div class="bg-white rounded-xl shadow p-6 flex items-center space-x-4">
-        <div class="bg-blue-100 text-blue-600 rounded-full p-4 text-2xl">📦</div>
-        <div>
-            <p class="text-sm text-gray-500">Total produits</p>
-            <p class="text-2xl font-bold text-gray-800">{{ $stats['total_produits'] }}</p>
+<div class="stats-grid mb-24">
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <div class="stat-icon" style="background:#eff6ff;">📦</div>
         </div>
+        <div class="stat-label">Total produits</div>
+        <div class="stat-value">{{ $stats['total_produits'] }}</div>
     </div>
-
-    {{-- Carte : Rupture de stock --}}
-    <div class="bg-white rounded-xl shadow p-6 flex items-center space-x-4">
-        <div class="bg-red-100 text-red-600 rounded-full p-4 text-2xl">⚠️</div>
-        <div>
-            <p class="text-sm text-gray-500">Rupture de stock</p>
-            <p class="text-2xl font-bold text-red-600">{{ $stats['produits_rupture'] }}</p>
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <div class="stat-icon" style="background:#fef2f2;">⚠️</div>
         </div>
+        <div class="stat-label">Ruptures de stock</div>
+        <div class="stat-value text-danger">{{ $stats['produits_rupture'] }}</div>
     </div>
-
-    {{-- Carte : Commandes en attente --}}
-    <div class="bg-white rounded-xl shadow p-6 flex items-center space-x-4">
-        <div class="bg-yellow-100 text-yellow-600 rounded-full p-4 text-2xl">🛒</div>
-        <div>
-            <p class="text-sm text-gray-500">Commandes en attente</p>
-            <p class="text-2xl font-bold text-gray-800">{{ $stats['commandes_en_attente'] }}</p>
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <div class="stat-icon" style="background:#fffbeb;">🛒</div>
         </div>
+        <div class="stat-label">Commandes en attente</div>
+        <div class="stat-value text-warning">{{ $stats['commandes_en_attente'] }}</div>
     </div>
-
-    {{-- Carte : Factures clients impayées --}}
-    <div class="bg-white rounded-xl shadow p-6 flex items-center space-x-4">
-        <div class="bg-orange-100 text-orange-600 rounded-full p-4 text-2xl">🧾</div>
-        <div>
-            <p class="text-sm text-gray-500">Factures clients impayées</p>
-            <p class="text-2xl font-bold text-orange-600">{{ $stats['factures_impayees'] }}</p>
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <div class="stat-icon" style="background:#ecfdf5;">🧾</div>
         </div>
+        <div class="stat-label">Factures client impayées</div>
+        <div class="stat-value text-success">{{ $stats['factures_impayees'] }}</div>
     </div>
-
-    {{-- Carte : Factures fournisseur impayées --}}
-    <div class="bg-white rounded-xl shadow p-6 flex items-center space-x-4">
-        <div class="bg-purple-100 text-purple-600 rounded-full p-4 text-2xl">🏭</div>
-        <div>
-            <p class="text-sm text-gray-500">Factures fournisseur impayées</p>
-            <p class="text-2xl font-bold text-purple-600">{{ $stats['factures_fournisseur'] }}</p>
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <div class="stat-icon" style="background:#f5f3ff;">🏭</div>
         </div>
+        <div class="stat-label">Factures fourn. impayées</div>
+        <div class="stat-value text-purple">{{ $stats['factures_fournisseur'] }}</div>
     </div>
-
-    {{-- Carte : Commandes fournisseur en attente --}}
-    <div class="bg-white rounded-xl shadow p-6 flex items-center space-x-4">
-        <div class="bg-green-100 text-green-600 rounded-full p-4 text-2xl">📋</div>
-        <div>
-            <p class="text-sm text-gray-500">Commandes fournisseur en attente</p>
-            <p class="text-2xl font-bold text-gray-800">{{ $stats['commandes_fournisseur'] }}</p>
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <div class="stat-icon" style="background:#ecfeff;">📋</div>
         </div>
+        <div class="stat-label">Commandes fourn. att.</div>
+        <div class="stat-value text-accent">{{ $stats['commandes_fournisseur'] }}</div>
     </div>
-
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="grid-2">
 
-    {{-- Produits en rupture --}}
-    <div class="bg-white rounded-xl shadow p-6">
-        <h3 class="text-base font-semibold text-gray-700 mb-4">⚠️ Produits en rupture de stock</h3>
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">⚠️ Produits en rupture de stock</span>
+            @can('produits.voir')
+            <a href="{{ route('produits.index') }}" class="btn btn-secondary btn-sm">Voir tout →</a>
+            @endcan
+        </div>
         @if($produitsRupture->isEmpty())
-            <p class="text-sm text-gray-400">Aucun produit en rupture.</p>
+        <div class="empty-state">
+            <div class="empty-state-icon">✅</div>
+            <div class="empty-state-text">Aucun produit en rupture</div>
+        </div>
         @else
-            <table class="w-full text-sm">
+        <div class="table-wrap">
+            <table class="data-table">
                 <thead>
-                    <tr class="text-left text-gray-500 border-b">
-                        <th class="pb-2">Produit</th>
-                        <th class="pb-2">Stock actuel</th>
-                        <th class="pb-2">Stock minimum</th>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Stock actuel</th>
+                        <th>Stock min.</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($produitsRupture as $produit)
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="py-2">{{ $produit->nom }}</td>
-                        <td class="py-2 text-red-600 font-bold">{{ $produit->stock_actuel }}</td>
-                        <td class="py-2">{{ $produit->stock_minimum }}</td>
+                    <tr>
+                        <td class="fw-500 text-900">{{ $produit->nom }}</td>
+                        <td><span class="badge badge-danger">{{ $produit->stock_actuel }} {{ $produit->unite }}</span></td>
+                        <td class="text-400">{{ $produit->stock_minimum }}</td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
+        </div>
         @endif
     </div>
 
-    {{-- Dernières commandes --}}
-    <div class="bg-white rounded-xl shadow p-6">
-        <h3 class="text-base font-semibold text-gray-700 mb-4">🛒 Dernières commandes clients</h3>
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">🛒 Dernières commandes clients</span>
+            @can('ventes.commandes.voir')
+            <a href="{{ route('ventes.commandes.index') }}" class="btn btn-secondary btn-sm">Voir tout →</a>
+            @endcan
+        </div>
         @if($dernieresCommandes->isEmpty())
-            <p class="text-sm text-gray-400">Aucune commande enregistrée.</p>
+        <div class="empty-state">
+            <div class="empty-state-icon">🛒</div>
+            <div class="empty-state-text">Aucune commande enregistrée</div>
+        </div>
         @else
-            <table class="w-full text-sm">
+        <div class="table-wrap">
+            <table class="data-table">
                 <thead>
-                    <tr class="text-left text-gray-500 border-b">
-                        <th class="pb-2">N°</th>
-                        <th class="pb-2">Client</th>
-                        <th class="pb-2">Montant</th>
-                        <th class="pb-2">Statut</th>
+                    <tr>
+                        <th>N°</th>
+                        <th>Client</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($dernieresCommandes as $commande)
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="py-2">{{ $commande->numero }}</td>
-                        <td class="py-2">{{ $commande->client->nom }}</td>
-                        <td class="py-2">{{ number_format($commande->montant_total, 0, ',', ' ') }} FCFA</td>
-                        <td class="py-2">
-                            <span class="px-2 py-1 rounded-full text-xs
-                                {{ $commande->statut === 'livrée' ? 'bg-green-100 text-green-700' : '' }}
-                                {{ $commande->statut === 'en_attente' ? 'bg-yellow-100 text-yellow-700' : '' }}
-                                {{ $commande->statut === 'annulée' ? 'bg-red-100 text-red-700' : '' }}">
-                                {{ $commande->statut }}
-                            </span>
+                    <tr>
+                        <td class="font-mono text-400">{{ $commande->numero }}</td>
+                        <td class="fw-500 text-900">{{ $commande->client->nom }}</td>
+                        <td class="fw-600 text-accent">{{ number_format($commande->montant_total, 0, ',', ' ') }} F</td>
+                        <td>
+                            @if($commande->statut === 'livrée')
+                                <span class="badge badge-success">{{ $commande->statut }}</span>
+                            @elseif($commande->statut === 'en_attente')
+                                <span class="badge badge-warning">{{ $commande->statut }}</span>
+                            @elseif($commande->statut === 'annulée')
+                                <span class="badge badge-danger">{{ $commande->statut }}</span>
+                            @else
+                                <span class="badge badge-info">{{ $commande->statut }}</span>
+                            @endif
                         </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
+        </div>
         @endif
     </div>
 

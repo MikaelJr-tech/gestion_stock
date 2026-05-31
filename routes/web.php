@@ -149,7 +149,7 @@ Route::middleware(['auth'])->group(function () {
     // ─── APPROVISIONNEMENTS ──────────────────────────────────────
     Route::prefix('approvisionnements')->name('appro.')->group(function () {
 
-        // Bons de commande fournisseur
+        // ── Bons de commande fournisseur ──
         Route::middleware(['permission:appro.commandes.creer'])->group(function () {
             Route::get('commandes/create', [BonCommandeFournisseurController::class, 'create'])->name('commandes.create');
             Route::post('commandes', [BonCommandeFournisseurController::class, 'store'])->name('commandes.store');
@@ -161,6 +161,7 @@ Route::middleware(['auth'])->group(function () {
         Route::middleware(['permission:appro.commandes.modifier'])->group(function () {
             Route::get('commandes/{commande}/edit', [BonCommandeFournisseurController::class, 'edit'])->name('commandes.edit');
             Route::put('commandes/{commande}', [BonCommandeFournisseurController::class, 'update'])->name('commandes.update');
+            Route::post('commandes/{commande}/recevoir', [BonCommandeFournisseurController::class, 'recevoir'])->name('commandes.recevoir');
         });
         Route::middleware(['permission:appro.commandes.supprimer'])->group(function () {
             Route::delete('commandes/{commande}', [BonCommandeFournisseurController::class, 'destroy'])->name('commandes.destroy');
@@ -170,7 +171,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('commandes/{commande}/imprimer-reception', [BonCommandeFournisseurController::class, 'imprimerReception'])->name('commandes.imprimer-reception');
         });
 
-        // Factures fournisseur
+        // ── Factures fournisseur ──
         Route::middleware(['permission:appro.factures.creer'])->group(function () {
             Route::get('factures/create', [FactureFournisseurController::class, 'create'])->name('factures.create');
             Route::post('factures', [FactureFournisseurController::class, 'store'])->name('factures.store');
@@ -194,7 +195,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('factures/{facture}/imprimer-recu', [FactureFournisseurController::class, 'imprimerRecu'])->name('factures.imprimer-recu');
         });
 
-        // Bons d'entrée
+        // ── Bons d'entrée ──
         Route::middleware(['permission:appro.bons-entree.creer'])->group(function () {
             Route::get('bons-entree/create', [BonEntreeController::class, 'create'])->name('bons-entree.create');
             Route::post('bons-entree', [BonEntreeController::class, 'store'])->name('bons-entree.store');
@@ -218,7 +219,7 @@ Route::middleware(['auth'])->group(function () {
     // ─── VENTES ──────────────────────────────────────────────────
     Route::prefix('ventes')->name('ventes.')->group(function () {
 
-        // Commandes client
+        // ── Commandes client ──
         Route::middleware(['permission:ventes.commandes.creer'])->group(function () {
             Route::get('commandes/create', [CommandeClientController::class, 'create'])->name('commandes.create');
             Route::post('commandes', [CommandeClientController::class, 'store'])->name('commandes.store');
@@ -242,7 +243,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('commandes/{commande}/imprimer-livraison', [CommandeClientController::class, 'imprimerLivraison'])->name('commandes.imprimer-livraison');
         });
 
-        // Factures client
+        // ── Factures client ──
         Route::middleware(['permission:ventes.factures.creer'])->group(function () {
             Route::get('factures/create', [FactureClientController::class, 'create'])->name('factures.create');
             Route::post('factures', [FactureClientController::class, 'store'])->name('factures.store');
@@ -265,7 +266,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('factures/{facture}/imprimer', [FactureClientController::class, 'imprimer'])->name('factures.imprimer');
         });
 
-        // Bons de sortie
+        // ── Bons de sortie ──
         Route::middleware(['permission:ventes.bons-sortie.creer'])->group(function () {
             Route::get('bons-sortie/create', [BonSortieController::class, 'create'])->name('bons-sortie.create');
             Route::post('bons-sortie', [BonSortieController::class, 'store'])->name('bons-sortie.store');
