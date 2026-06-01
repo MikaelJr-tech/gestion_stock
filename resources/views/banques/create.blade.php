@@ -2,37 +2,42 @@
 @section('title', 'Nouvelle banque')
 
 @section('content')
-<div class="max-w-xl mx-auto bg-white rounded-xl shadow p-6">
-    <h3 class="text-lg font-semibold text-gray-700 mb-6">Créer une banque</h3>
+<a href="{{ route('banques.index') }}" class="back-link">← Retour aux banques</a>
 
-    <form action="{{ route('banques.store') }}" method="POST" class="space-y-4">
-        @csrf
-
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nom <span class="text-red-500">*</span></label>
-            <input type="text" name="nom" value="{{ old('nom') }}"
-                   placeholder="Ex: BICEC, Afriland..."
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            @error('nom')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+<div style="max-width: 560px;">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Créer une banque</span>
         </div>
+        <div class="card-body">
+            <form action="{{ route('banques.store') }}" method="POST">
+                @csrf
 
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Numéro de compte</label>
-            <input type="text" name="numero_compte" value="{{ old('numero_compte') }}"
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
+                <div class="form-group">
+                    <label class="form-label">Nom <span class="req">*</span></label>
+                    <input type="text" name="nom" value="{{ old('nom') }}"
+                           class="form-input" placeholder="Ex: BICEC, Afriland...">
+                    @error('nom')<div class="form-error">{{ $message }}</div>@enderror
+                </div>
 
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Solde initial <span class="text-red-500">*</span></label>
-            <input type="number" name="solde" value="{{ old('solde', 0) }}" step="0.01"
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            @error('solde')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-        </div>
+                <div class="form-group">
+                    <label class="form-label">Numéro de compte</label>
+                    <input type="text" name="numero_compte" value="{{ old('numero_compte') }}" class="form-input">
+                </div>
 
-        <div class="flex justify-end space-x-3 pt-4">
-            <a href="{{ route('banques.index') }}" class="px-4 py-2 text-sm text-gray-600 border rounded-lg hover:bg-gray-50">Annuler</a>
-            <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">Enregistrer</button>
+                <div class="form-group">
+                    <label class="form-label">Solde initial <span class="req">*</span></label>
+                    <input type="number" name="solde" value="{{ old('solde', 0) }}"
+                           step="0.01" class="form-input">
+                    @error('solde')<div class="form-error">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="flex gap-8" style="justify-content: flex-end; margin-top: 8px;">
+                    <a href="{{ route('banques.index') }}" class="btn btn-secondary">Annuler</a>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 @endsection

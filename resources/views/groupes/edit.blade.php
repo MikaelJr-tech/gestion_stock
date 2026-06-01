@@ -2,41 +2,50 @@
 @section('title', 'Modifier groupe')
 
 @section('content')
-<div class="max-w-2xl mx-auto bg-white rounded-xl shadow p-6">
-    <h3 class="text-lg font-semibold text-gray-700 mb-6">Modifier : {{ $groupe->name }}</h3>
+<a href="{{ route('groupes.index') }}" class="back-link">← Retour aux groupes</a>
 
-    <form action="{{ route('groupes.update', $groupe) }}" method="POST" class="space-y-6">
-        @csrf @method('PUT')
-
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nom du groupe</label>
-            <input type="text" name="name" value="{{ old('name', $groupe->name) }}"
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+<div style="max-width: 640px;">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Modifier : {{ $groupe->name }}</span>
         </div>
+        <div class="card-body">
+            <form action="{{ route('groupes.update', $groupe) }}" method="POST">
+                @csrf @method('PUT')
 
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-3">Permissions</label>
-            @foreach($permissions as $module => $perms)
-            <div class="mb-4">
-                <p class="text-sm font-semibold text-gray-600 mb-2 uppercase">{{ $module }}</p>
-                <div class="grid grid-cols-2 gap-2">
-                    @foreach($perms as $perm)
-                    <label class="flex items-center space-x-2 text-sm">
-                        <input type="checkbox" name="permissions[]" value="{{ $perm->name }}"
-                               {{ $groupe->hasPermissionTo($perm->name) ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-blue-600">
-                        <span>{{ $perm->name }}</span>
-                    </label>
-                    @endforeach
+                <div class="form-group mb-20">
+                    <label class="form-label">Nom du groupe</label>
+                    <input type="text" name="name" value="{{ old('name', $groupe->name) }}" class="form-input">
                 </div>
-            </div>
-            @endforeach
-        </div>
 
-        <div class="flex justify-end space-x-3">
-            <a href="{{ route('groupes.index') }}" class="px-4 py-2 text-sm text-gray-600 border rounded-lg hover:bg-gray-50">Annuler</a>
-            <button type="submit" class="px-4 py-2 text-sm bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Mettre à jour</button>
+                <div class="form-section">
+                    <span>Permissions</span>
+                </div>
+
+                @foreach($permissions as $module => $perms)
+                <div class="mb-16">
+                    <p class="fw-600 text-700 mb-8" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;">
+                        {{ $module }}
+                    </p>
+                    <div class="grid-2">
+                        @foreach($perms as $perm)
+                        <label class="flex-center gap-8" style="font-size:13px;cursor:pointer;padding:4px 0;">
+                            <input type="checkbox" name="permissions[]" value="{{ $perm->name }}"
+                                   {{ $groupe->hasPermissionTo($perm->name) ? 'checked' : '' }}
+                                   style="width:14px;height:14px;accent-color:var(--accent);">
+                            <span class="text-700">{{ $perm->name }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+                @endforeach
+
+                <div class="flex gap-8" style="justify-content: flex-end; margin-top: 16px;">
+                    <a href="{{ route('groupes.index') }}" class="btn btn-secondary">Annuler</a>
+                    <button type="submit" class="btn btn-warning">Mettre à jour</button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 @endsection

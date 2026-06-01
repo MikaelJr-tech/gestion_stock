@@ -2,84 +2,133 @@
 @section('title', $fournisseur->nom)
 
 @section('content')
-<div class="mb-4">
-    <a href="{{ route('fournisseurs.index') }}" class="text-sm text-blue-600 hover:underline">← Retour aux fournisseurs</a>
-</div>
+<a href="{{ route('fournisseurs.index') }}" class="back-link">← Retour aux fournisseurs</a>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl shadow p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4">🏭 {{ $fournisseur->nom }}</h3>
-        <div class="space-y-2 text-sm">
-            <div><span class="text-gray-500">Téléphone :</span> <span class="font-medium">{{ $fournisseur->telephone ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Email :</span> <span class="font-medium">{{ $fournisseur->email ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Adresse :</span> <span class="font-medium">{{ $fournisseur->adresse ?? '-' }}</span></div>
-            <div><span class="text-gray-500">N° Contribuable :</span> <span class="font-medium">{{ $fournisseur->numero_contribuable ?? '-' }}</span></div>
+<div class="grid-2 mb-20" style="align-items: start;">
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">🏭 {{ $fournisseur->nom }}</span>
         </div>
-        <a href="{{ route('fournisseurs.edit', $fournisseur) }}"
-           class="mt-4 inline-block px-4 py-2 text-sm bg-yellow-500 text-white rounded-lg">Modifier</a>
+        <div class="card-body">
+            <div class="detail-row">
+                <span class="detail-label">Téléphone</span>
+                <span class="detail-value">{{ $fournisseur->telephone ?? '—' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Email</span>
+                <span class="detail-value">{{ $fournisseur->email ?? '—' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Adresse</span>
+                <span class="detail-value">{{ $fournisseur->adresse ?? '—' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">N° Contribuable</span>
+                <span class="detail-value font-mono">{{ $fournisseur->numero_contribuable ?? '—' }}</span>
+            </div>
+        </div>
+        <div class="card-header" style="border-top: 1px solid var(--border); border-bottom: none;">
+            @can('fournisseurs.modifier')
+            <a href="{{ route('fournisseurs.edit', $fournisseur) }}" class="btn btn-warning btn-sm">Modifier</a>
+            @endcan
+        </div>
     </div>
 
-    <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white rounded-xl shadow p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h4 class="font-semibold text-gray-700">Bons de commande</h4>
-                <a href="{{ route('appro.commandes.create') }}" class="text-sm text-blue-600 hover:underline">+ Nouveau</a>
+    <div class="flex flex-col gap-16">
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Derniers bons de commande</span>
+                @can('appro.commandes.creer')
+                <a href="{{ route('appro.commandes.create') }}" class="btn btn-primary btn-sm">+ Nouveau</a>
+                @endcan
             </div>
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-gray-600">
-                    <tr>
-                        <th class="px-3 py-2 text-left">Numéro</th>
-                        <th class="px-3 py-2 text-left">Date</th>
-                        <th class="px-3 py-2 text-left">Montant</th>
-                        <th class="px-3 py-2 text-left">Statut</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($fournisseur->bonsCommande->take(5) as $bc)
-                    <tr>
-                        <td class="px-3 py-2 font-mono text-xs">{{ $bc->numero }}</td>
-                        <td class="px-3 py-2">{{ $bc->date_commande->format('d/m/Y') }}</td>
-                        <td class="px-3 py-2 font-bold">{{ number_format($bc->montant_total, 0, ',', ' ') }} FCFA</td>
-                        <td class="px-3 py-2">
-                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">{{ $bc->statut }}</span>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="4" class="px-3 py-4 text-center text-gray-400">Aucune commande.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Date</th>
+                            <th>Montant</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($fournisseur->bonsCommande->take(4) as $bc)
+                        <tr>
+                            <td class="font-mono text-400">{{ $bc->numero }}</td>
+                            <td class="text-500">{{ $bc->date_commande->format('d/m/Y') }}</td>
+                            <td class="fw-600 text-900">{{ number_format($bc->montant_total, 0, ',', ' ') }} FCFA</td>
+                            <td>
+                                @if($bc->statut === 'reçu')
+                                    <span class="badge badge-success">{{ $bc->statut }}</span>
+                                @elseif($bc->statut === 'partiel')
+                                    <span class="badge badge-warning">{{ $bc->statut }}</span>
+                                @else
+                                    <span class="badge badge-neutral">{{ $bc->statut }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state" style="padding: 20px;">
+                                    <div class="empty-state-text">Aucune commande.</div>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow p-6">
-            <h4 class="font-semibold text-gray-700 mb-4">Factures fournisseur</h4>
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-gray-600">
-                    <tr>
-                        <th class="px-3 py-2 text-left">Numéro</th>
-                        <th class="px-3 py-2 text-left">Date</th>
-                        <th class="px-3 py-2 text-left">Montant TTC</th>
-                        <th class="px-3 py-2 text-left">Statut</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($fournisseur->factures->take(5) as $facture)
-                    <tr>
-                        <td class="px-3 py-2 font-mono text-xs">{{ $facture->numero }}</td>
-                        <td class="px-3 py-2">{{ $facture->date_facture->format('d/m/Y') }}</td>
-                        <td class="px-3 py-2 font-bold">{{ number_format($facture->montant_ttc, 0, ',', ' ') }} FCFA</td>
-                        <td class="px-3 py-2">
-                            <span class="px-2 py-1 rounded-full text-xs
-                                {{ $facture->statut === 'réglée' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                {{ $facture->statut }}
-                            </span>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="4" class="px-3 py-4 text-center text-gray-400">Aucune facture.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Dernières factures</span>
+                @can('appro.factures.creer')
+                <a href="{{ route('appro.factures.create') }}" class="btn btn-primary btn-sm">+ Nouvelle</a>
+                @endcan
+            </div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Date</th>
+                            <th>Montant TTC</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($fournisseur->factures->take(4) as $facture)
+                        <tr>
+                            <td class="font-mono text-400">{{ $facture->numero }}</td>
+                            <td class="text-500">{{ $facture->date_facture->format('d/m/Y') }}</td>
+                            <td class="fw-600 text-900">{{ number_format($facture->montant_ttc, 0, ',', ' ') }} FCFA</td>
+                            <td>
+                                @if($facture->statut === 'réglée')
+                                    <span class="badge badge-success">{{ $facture->statut }}</span>
+                                @elseif($facture->statut === 'partielle')
+                                    <span class="badge badge-warning">{{ $facture->statut }}</span>
+                                @else
+                                    <span class="badge badge-danger">{{ $facture->statut }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state" style="padding: 20px;">
+                                    <div class="empty-state-text">Aucune facture.</div>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

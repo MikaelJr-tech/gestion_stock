@@ -38,7 +38,8 @@ class UserController extends Controller
 
         $user->assignRole($request->role);
 
-        return redirect()->route('utilisateurs.index')->with('success', 'Utilisateur créé avec succès.');
+        return redirect()->route('utilisateurs.index')
+            ->with('success', 'Utilisateur créé avec succès.');
     }
 
     public function show(User $utilisateur)
@@ -69,12 +70,24 @@ class UserController extends Controller
 
         $utilisateur->syncRoles([$request->role]);
 
-        return redirect()->route('utilisateurs.index')->with('success', 'Utilisateur modifié avec succès.');
+        return redirect()->route('utilisateurs.index')
+            ->with('success', 'Utilisateur modifié avec succès.');
     }
 
     public function destroy(User $utilisateur)
     {
+        // Empêcher l'admin de se supprimer lui-même
+        if (auth()->id() === $utilisateur->id) {
+            return redirect()->route('utilisateurs.index')
+                ->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
+        }
+
+        // Archiver avant suppression
+        ArchiveController::archiver('utilisateur', $utilisateur);
+
         $utilisateur->delete();
-        return redirect()->route('utilisateurs.index')->with('success', 'Utilisateur supprimé avec succès.');
+
+        return redirect()->route('utilisateurs.index')
+            ->with('success', 'Utilisateur supprimé et archivé en XML.');
     }
 }

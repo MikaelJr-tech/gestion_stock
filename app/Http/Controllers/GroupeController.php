@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use SimpleXMLElement;
+use Illuminate\Support\Facades\Storage;
 
 class GroupeController extends Controller
 {
@@ -33,7 +35,8 @@ class GroupeController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        return redirect()->route('groupes.index')->with('success', 'Groupe créé avec succès.');
+        return redirect()->route('groupes.index')
+            ->with('success', 'Groupe créé avec succès.');
     }
 
     public function show(Role $groupe)
@@ -58,12 +61,55 @@ class GroupeController extends Controller
         $groupe->update(['name' => $request->name]);
         $groupe->syncPermissions($request->permissions ?? []);
 
-        return redirect()->route('groupes.index')->with('success', 'Groupe modifié avec succès.');
+        return redirect()->route('groupes.index')
+            ->with('success', 'Groupe modifié avec succès.');
     }
 
     public function destroy(Role $groupe)
     {
+        // Archiver le groupe avec ses permissions
+        $this->archiverGroupe($groupe);
+
         $groupe->delete();
-        return redirect()->route('groupes.index')->with('success', 'Groupe supprimé avec succès.');
+
+        return redirect()->route('groupes.index')
+            ->with('success', 'Groupe supprimé et archivé en XML.');
+    }
+
+    // ── Archivage spécial pour les Roles Spatie ──────────────────
+    private function archiverGroupe(Role $groupe): void
+    {
+        $groupe->load('permissions', 'users');
+
+        $xml  = new SimpleXMLElement('<archive/>');
+        $xml->addChild('type', 'groupe');
+        $xml->addChild('date_suppression', now()->toISOString());
+        $xml->addChild('supprime_par', auth()->user()->name ?? 'Système');
+
+        // Données principales du groupe
+        $enregs = $xml->addChild('enregistrements');
+        $enreg  = $enregs->addChild('enregistrement');
+        $enreg->addChild('id',         (string) $groupe->id);
+        $enreg->addChild('name',       htmlspecialchars($groupe->name));
+        $enreg->addChild('guard_name', htmlspecialchars($groupe->guard_name));
+
+        // Permissions associées
+        $permsNode = $xml->addChild('permissions');
+        foreach ($groupe->permissions as $perm) {
+            $permNode = $permsNode->addChild('permission');
+            $permNode->addChild('name', htmlspecialchars($perm->name));
+        }
+
+        // Utilisateurs qui avaient ce rôle
+        $usersNode = $xml->addChild('utilisateurs');
+        foreach ($groupe->users as $user) {
+            $userNode = $usersNode->addChild('utilisateur');
+            $userNode->addChild('id',    (string) $user->id);
+            $userNode->addChild('name',  htmlspecialchars($user->name));
+            $userNode->addChild('email', htmlspecialchars($user->email));
+        }
+
+        $nom = 'groupe_' . $groupe->id . '_' . now()->format('Ymd_His') . '.xml';
+        Storage::put('archives/' . $nom, $xml->asXML());
     }
 }
