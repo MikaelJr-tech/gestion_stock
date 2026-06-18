@@ -2,72 +2,109 @@
 @section('title', 'Commande ' . $commande->numero)
 
 @section('content')
-<div class="mb-4 flex justify-between">
-    <a href="{{ route('ventes.commandes.index') }}" class="text-sm text-blue-600 hover:underline">← Retour</a>
-    <div class="flex space-x-2">
+<a href="{{ route('ventes.commandes.index') }}" class="back-link">← Retour aux commandes</a>
+
+<div class="flex-between mb-16">
+    <div></div>
+    <div class="flex gap-8">
         @if($commande->statut === 'en_attente')
+        @can('ventes.commandes.livrer')
         <form action="{{ route('ventes.commandes.livrer', $commande) }}" method="POST"
               onsubmit="return confirm('Confirmer la livraison ?')">
             @csrf
-            <button class="px-3 py-2 text-sm bg-green-600 text-white rounded-lg">✅ Livrer</button>
+            <button type="submit" class="btn btn-success">✅ Livrer</button>
         </form>
+        @endcan
         @endif
+        @can('ventes.commandes.imprimer')
         <a href="{{ route('ventes.commandes.imprimer', $commande) }}" target="_blank"
-           class="px-3 py-2 text-sm bg-purple-600 text-white rounded-lg">🖨️ Bon commande</a>
+           class="btn btn-info">🖨 Bon commande</a>
         <a href="{{ route('ventes.commandes.imprimer-livraison', $commande) }}" target="_blank"
-           class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg">🖨️ Bon livraison</a>
-        <a href="{{ route('ventes.commandes.edit', $commande) }}"
-           class="px-3 py-2 text-sm bg-yellow-500 text-white rounded-lg">Modifier</a>
+           class="btn btn-secondary">🖨 Bon livraison</a>
+        @endcan
+        @can('ventes.commandes.modifier')
+        <a href="{{ route('ventes.commandes.edit', $commande) }}" class="btn btn-warning">✏ Modifier</a>
+        @endcan
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl shadow p-6 space-y-3 text-sm">
-        <h3 class="font-bold text-gray-800">🛒 {{ $commande->numero }}</h3>
-        <div><span class="text-gray-500">Client :</span> <span class="font-medium">{{ $commande->client->nom }}</span></div>
-        <div><span class="text-gray-500">Date :</span> <span class="font-medium">{{ $commande->date_commande->format('d/m/Y') }}</span></div>
-        <div><span class="text-gray-500">Créé par :</span> <span class="font-medium">{{ $commande->user->name }}</span></div>
-        <div><span class="text-gray-500">Statut :</span>
-            <span class="px-2 py-1 rounded-full text-xs
-                {{ $commande->statut === 'livrée' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
-                {{ $commande->statut }}
-            </span>
+<div class="grid-2 mb-16" style="align-items: start;">
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">🛒 {{ $commande->numero }}</span>
+            @if($commande->statut === 'livrée')
+                <span class="badge badge-success">{{ $commande->statut }}</span>
+            @elseif($commande->statut === 'en_attente')
+                <span class="badge badge-warning">{{ $commande->statut }}</span>
+            @elseif($commande->statut === 'annulée')
+                <span class="badge badge-danger">{{ $commande->statut }}</span>
+            @else
+                <span class="badge badge-info">{{ $commande->statut }}</span>
+            @endif
         </div>
-        <div><span class="text-gray-500">Montant total :</span>
-            <span class="font-bold text-blue-600 text-lg">{{ number_format($commande->montant_total, 0, ',', ' ') }} FCFA</span>
+        <div class="card-body">
+            <div class="detail-row">
+                <span class="detail-label">Client</span>
+                <span class="detail-value fw-600">{{ $commande->client->nom }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date commande</span>
+                <span class="detail-value">{{ $commande->date_commande->format('d/m/Y') }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Créé par</span>
+                <span class="detail-value">{{ $commande->user->name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Montant total</span>
+                <span class="detail-value fw-700 text-accent" style="font-size:18px;">
+                    {{ number_format($commande->montant_total, 0, ',', ' ') }} FCFA
+                </span>
+            </div>
         </div>
     </div>
 
-    <div class="lg:col-span-2 bg-white rounded-xl shadow p-6">
-        <h4 class="font-semibold text-gray-700 mb-4">Produits commandés</h4>
-        <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-gray-600">
-                <tr>
-                    <th class="px-3 py-2 text-left">Produit</th>
-                    <th class="px-3 py-2 text-left">Quantité</th>
-                    <th class="px-3 py-2 text-left">Prix unitaire</th>
-                    <th class="px-3 py-2 text-left">Remise</th>
-                    <th class="px-3 py-2 text-left">Montant</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                @foreach($commande->lignes as $ligne)
-                <tr>
-                    <td class="px-3 py-2 font-medium">{{ $ligne->produit->nom }}</td>
-                    <td class="px-3 py-2">{{ $ligne->quantite }} {{ $ligne->produit->unite }}</td>
-                    <td class="px-3 py-2">{{ number_format($ligne->prix_unitaire, 0, ',', ' ') }} FCFA</td>
-                    <td class="px-3 py-2">{{ $ligne->remise }} %</td>
-                    <td class="px-3 py-2 font-bold">{{ number_format($ligne->montant, 0, ',', ' ') }} FCFA</td>
-                </tr>
-                @endforeach
-            </tbody>
-            <tfoot class="bg-gray-50">
-                <tr>
-                    <td colspan="4" class="px-3 py-2 text-right font-bold">TOTAL :</td>
-                    <td class="px-3 py-2 font-bold text-blue-600">{{ number_format($commande->montant_total, 0, ',', ' ') }} FCFA</td>
-                </tr>
-            </tfoot>
-        </table>
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Produits commandés</span>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Qté</th>
+                        <th>Prix unit.</th>
+                        <th>Remise</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($commande->lignes as $ligne)
+                    <tr>
+                        <td class="fw-500 text-900">{{ $ligne->produit->nom }}</td>
+                        <td>{{ $ligne->quantite }} {{ $ligne->produit->unite }}</td>
+                        <td>{{ number_format($ligne->prix_unitaire, 0, ',', ' ') }}</td>
+                        <td>
+                            @if($ligne->remise > 0)
+                                <span class="badge badge-warning">{{ $ligne->remise }} %</span>
+                            @else
+                                <span class="text-400">—</span>
+                            @endif
+                        </td>
+                        <td class="fw-600 text-accent">{{ number_format($ligne->montant, 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-right fw-700">TOTAL :</td>
+                        <td class="fw-700 text-accent">{{ number_format($commande->montant_total, 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
     </div>
 </div>
 @endsection

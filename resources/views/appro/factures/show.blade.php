@@ -2,75 +2,139 @@
 @section('title', 'Facture ' . $facture->numero)
 
 @section('content')
-<div class="mb-4 flex justify-between">
-    <a href="{{ route('appro.factures.index') }}" class="text-sm text-blue-600 hover:underline">← Retour</a>
-    <div class="flex space-x-2">
-        <a href="{{ route('appro.factures.imprimer', $facture) }}" target="_blank"
-           class="px-3 py-2 text-sm bg-green-600 text-white rounded-lg">🖨️ Imprimer</a>
-        <a href="{{ route('appro.factures.imprimer-recu', $facture) }}" target="_blank"
-           class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg">🖨️ Reçu</a>
+<a href="{{ route('appro.factures.index') }}" class="back-link">← Retour aux factures</a>
+
+<div class="flex-between mb-16">
+    <div></div>
+    <div class="flex gap-8">
+        @can('appro.factures.imprimer')
+        <a href="{{ route('appro.factures.imprimer', $facture) }}" target="_blank" class="btn btn-success">🖨 Imprimer</a>
+        <a href="{{ route('appro.factures.imprimer-recu', $facture) }}" target="_blank" class="btn btn-info">🖨 Reçu</a>
+        @endcan
+        @can('appro.factures.modifier')
+        <a href="{{ route('appro.factures.edit', $facture) }}" class="btn btn-warning">✏ Modifier</a>
+        @endcan
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl shadow p-6 space-y-3 text-sm">
-        <h3 class="font-bold text-gray-800">{{ $facture->numero }}</h3>
-        <div><span class="text-gray-500">Fournisseur :</span> <span class="font-medium">{{ $facture->fournisseur->nom }}</span></div>
-        <div><span class="text-gray-500">Date :</span> <span class="font-medium">{{ $facture->date_facture->format('d/m/Y') }}</span></div>
-        <div><span class="text-gray-500">Échéance :</span> <span class="font-medium">{{ $facture->date_echeance?->format('d/m/Y') ?? '-' }}</span></div>
-        <div><span class="text-gray-500">Montant HT :</span> <span class="font-medium">{{ number_format($facture->montant_ht, 0, ',', ' ') }} FCFA</span></div>
-        <div><span class="text-gray-500">TVA :</span> <span class="font-medium">{{ $facture->tva }} %</span></div>
-        <div><span class="text-gray-500">Montant TTC :</span> <span class="font-bold text-blue-600">{{ number_format($facture->montant_ttc, 0, ',', ' ') }} FCFA</span></div>
-        <div><span class="text-gray-500">Réglé :</span> <span class="text-green-600 font-bold">{{ number_format($facture->montant_regle, 0, ',', ' ') }} FCFA</span></div>
-        <div><span class="text-gray-500">Reste :</span> <span class="text-red-600 font-bold">{{ number_format($facture->resteAPayer(), 0, ',', ' ') }} FCFA</span></div>
-        <div>
-            <span class="px-2 py-1 rounded-full text-xs
-                {{ $facture->statut === 'réglée' ? 'bg-green-100 text-green-700' : '' }}
-                {{ $facture->statut === 'impayée' ? 'bg-red-100 text-red-700' : '' }}
-                {{ $facture->statut === 'partielle' ? 'bg-yellow-100 text-yellow-700' : '' }}">
-                {{ $facture->statut }}
-            </span>
+<div class="grid-2 mb-16" style="align-items: start;">
+
+    {{-- Infos facture --}}
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">{{ $facture->numero }}</span>
+            @if($facture->statut === 'réglée')
+                <span class="badge badge-success">{{ $facture->statut }}</span>
+            @elseif($facture->statut === 'partielle')
+                <span class="badge badge-warning">{{ $facture->statut }}</span>
+            @else
+                <span class="badge badge-danger">{{ $facture->statut }}</span>
+            @endif
+        </div>
+        <div class="card-body">
+            <div class="detail-row">
+                <span class="detail-label">Fournisseur</span>
+                <span class="detail-value fw-600">{{ $facture->fournisseur->nom }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date facture</span>
+                <span class="detail-value">{{ $facture->date_facture->format('d/m/Y') }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date échéance</span>
+                <span class="detail-value">{{ $facture->date_echeance?->format('d/m/Y') ?? '—' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Montant HT</span>
+                <span class="detail-value">{{ number_format($facture->montant_ht, 0, ',', ' ') }} FCFA</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">TVA</span>
+                <span class="detail-value">{{ $facture->tva }} %</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Montant TTC</span>
+                <span class="detail-value fw-700 text-accent" style="font-size:16px;">
+                    {{ number_format($facture->montant_ttc, 0, ',', ' ') }} FCFA
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Réglé</span>
+                <span class="detail-value fw-600 text-success">
+                    {{ number_format($facture->montant_regle, 0, ',', ' ') }} FCFA
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Reste à payer</span>
+                <span class="detail-value fw-700 text-danger" style="font-size:16px;">
+                    {{ number_format($facture->resteAPayer(), 0, ',', ' ') }} FCFA
+                </span>
+            </div>
         </div>
 
+        {{-- Formulaire de règlement --}}
         @if($facture->resteAPayer() > 0)
-        <form action="{{ route('appro.factures.regler', $facture) }}" method="POST" class="pt-4 space-y-2">
-            @csrf
-            <label class="block text-sm font-medium text-gray-700">Régler un montant</label>
-            <input type="number" name="montant_regle" step="0.01" min="0" max="{{ $facture->resteAPayer() }}"
-                   placeholder="Montant à régler"
-                   class="w-full border rounded-lg px-3 py-2 text-sm">
-            <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
-                ✅ Enregistrer le règlement
-            </button>
-        </form>
+        @can('appro.factures.regler')
+        <div class="card-body" style="border-top: 1px solid var(--border);">
+            <div class="regler-box">
+                <p class="fw-600 text-success mb-8" style="font-size:13px;">💳 Enregistrer un règlement</p>
+                <form action="{{ route('appro.factures.regler', $facture) }}" method="POST">
+                    @csrf
+                    <div class="flex gap-8" style="align-items: flex-end;">
+                        <div style="flex:1;">
+                            <label class="form-label">Montant à régler</label>
+                            <input type="number" name="montant_regle"
+                                   step="0.01" min="0.01" max="{{ $facture->resteAPayer() }}"
+                                   placeholder="0" class="form-input">
+                        </div>
+                        <button type="submit" class="btn btn-success">✅ Régler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endcan
         @endif
     </div>
 
-    <div class="lg:col-span-2 bg-white rounded-xl shadow p-6">
-        <h4 class="font-semibold text-gray-700 mb-4">Produits liés (via bon de commande)</h4>
+    {{-- Produits liés --}}
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Produits liés (via bon de commande)</span>
+        </div>
         @if($facture->bonCommande)
-        <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-gray-600">
-                <tr>
-                    <th class="px-3 py-2 text-left">Produit</th>
-                    <th class="px-3 py-2 text-left">Quantité</th>
-                    <th class="px-3 py-2 text-left">Prix unitaire</th>
-                    <th class="px-3 py-2 text-left">Montant</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                @foreach($facture->bonCommande->lignes as $ligne)
-                <tr>
-                    <td class="px-3 py-2">{{ $ligne->produit->nom }}</td>
-                    <td class="px-3 py-2">{{ $ligne->quantite_commandee }}</td>
-                    <td class="px-3 py-2">{{ number_format($ligne->prix_unitaire, 0, ',', ' ') }} FCFA</td>
-                    <td class="px-3 py-2 font-bold">{{ number_format($ligne->montant, 0, ',', ' ') }} FCFA</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Quantité</th>
+                        <th>Prix unitaire</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($facture->bonCommande->lignes as $ligne)
+                    <tr>
+                        <td class="fw-500 text-900">{{ $ligne->produit->nom }}</td>
+                        <td>{{ $ligne->quantite_commandee }} {{ $ligne->produit->unite }}</td>
+                        <td>{{ number_format($ligne->prix_unitaire, 0, ',', ' ') }} FCFA</td>
+                        <td class="fw-600">{{ number_format($ligne->montant, 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-right fw-700">TOTAL :</td>
+                        <td class="fw-700 text-accent">{{ number_format($facture->montant_ht, 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
         @else
-        <p class="text-sm text-gray-400">Aucun bon de commande lié.</p>
+        <div class="empty-state">
+            <div class="empty-state-icon">🧾</div>
+            <div class="empty-state-text">Aucun bon de commande lié.</div>
+        </div>
         @endif
     </div>
 </div>
